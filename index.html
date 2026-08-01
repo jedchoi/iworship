@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>아이워십 (iWorship) QT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 데스크톱 브라우저에서 모바일 크기로 보이게 하는 디바이스 쉘 -->
+  <div class="device-shell">
+    
+    <!-- 상단 앱 헤더 영역 (묵상 탭에서 노출) -->
+    <header class="app-header" id="app-header">
+      <div class="week-selector-container">
+        <button class="week-selector-btn" id="week-selector-btn">
+          <span id="current-week-label">7월 1주차</span>
+          <svg class="icon dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+      
+      <!-- 주간 가로 달력 스트립 -->
+      <div class="weekly-strip" id="weekly-strip">
+        <!-- JS에서 동적으로 채워짐 -->
+      </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="content-container">
+      
+      <!-- 1. 묵상 스크린 -->
+      <section class="screen active" id="screen-meditation">
+        <div class="screen-header">
+          <h2 class="meditation-title" id="meditation-title">도둑의 소굴로 보이느냐</h2>
+          <span class="meditation-ref" id="meditation-ref">예레미야 7:1-11</span>
+        </div>
+        
+        <!-- 말씀 / 기록 페이지 지시자 도트 -->
+        <div class="page-indicator">
+          <span class="dot active" id="dot-page1" onclick="meditationSwipe(0)"></span>
+          <span class="dot" id="dot-page2" onclick="meditationSwipe(1)"></span>
+        </div>
+
+        <!-- 슬라이더 컨테이너 -->
+        <div class="swipe-viewport">
+          <div class="swipe-slider" id="meditation-slider">
+            
+            <!-- Page 1: 말씀 독서 영역 -->
+            <div class="swipe-page" id="meditation-page1">
+              <div class="scripture-container" id="scripture-container">
+                <!-- JS에서 동적으로 성경 절 렌더링 -->
+              </div>
+              
+              <!-- 말씀 해설 BGM 플로팅 버튼 -->
+              <button class="bgm-floating-btn" id="bgm-btn">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                <span>BGM 해설</span>
+              </button>
+            </div>
+            
+            <!-- Page 2: 기록 / 양식 작성 영역 (평일/주일 양식 스위칭) -->
+            <div class="swipe-page" id="meditation-page2">
+              <div class="forms-scroll-container">
+                <!-- 평일/주일 양식이 들어갈 영역 -->
+                <div id="meditation-form-content"></div>
+                
+                <!-- 카카오톡 공유 버튼 -->
+                <button class="share-kakao-btn" id="share-kakao-btn">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.547 1.685 4.784 4.22 6.007-.272.935-.98 3.376-1.123 3.886-.18.647.218.638.46.478.188-.124 3.013-2.032 4.195-2.825.405.059.82.09 1.248.09 4.97 0 9-3.186 9-7.116S16.97 3 12 3z"/></svg>
+                  <span>오늘의 묵상 카톡 공유하기</span>
+                </button>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 여정 스크린 (달력 및 기록 피드) -->
+      <section class="screen" id="screen-journey">
+        <div class="journey-header">
+          <h2>나의 묵상 여정</h2>
+          <div class="month-selector">
+            <span>2026년 7월</span>
+          </div>
+        </div>
+        
+        <div class="journey-scroll-area">
+          <!-- 달력 그리드 -->
+          <div class="calendar-card">
+            <div class="calendar-weekdays">
+              <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+            </div>
+            <div class="calendar-days" id="calendar-days-grid">
+              <!-- JS에서 동적으로 7월 그리드 생성 -->
+            </div>
+          </div>
+          
+          <!-- 통계 카드 -->
+          <div class="stats-card">
+            <h3>7월 묵상 통계</h3>
+            <div class="stats-row">
+              <div class="stats-item">
+                <span class="stats-num" id="stats-percentage">0%</span>
+                <span class="stats-label">묵상 완료율</span>
+              </div>
+              <div class="stats-item">
+                <span class="stats-num" id="stats-count">0일</span>
+                <span class="stats-label">완료 일수</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 기록 피드 -->
+          <div class="feed-section">
+            <div class="feed-filter-bar">
+              <button class="filter-chip active" data-filter="all">전체</button>
+              <button class="filter-chip" data-filter="gratitude">#감사</button>
+              <button class="filter-chip" data-filter="prayer">#기도</button>
+              <button class="filter-chip" data-filter="sermon">#설교노트</button>
+            </div>
+            
+            <div class="feed-list" id="feed-list-container">
+              <!-- JS에서 기록 피드 렌더링 -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 주보 스크린 -->
+      <section class="screen" id="screen-bulletin">
+        <div class="bulletin-header">
+          <h2>교회 주보</h2>
+          <select class="bulletin-select" id="bulletin-select">
+            <!-- JS에서 동적으로 과거 주보 리스트 채움 -->
+          </select>
+        </div>
+        
+        <div class="bulletin-slider-container">
+          <div class="bulletin-slider" id="bulletin-slider">
+            <!-- 주보 이미지 카드들이 가변으로 로드됨 -->
+          </div>
+          
+          <div class="bulletin-nav">
+            <button class="bulletin-nav-btn" id="bulletin-prev-btn">&lt;</button>
+            <span class="bulletin-page-indicator" id="bulletin-page-indicator">1 / 1</span>
+            <button class="bulletin-nav-btn" id="bulletin-next-btn">&gt;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 설정 스크린 -->
+      <section class="screen" id="screen-settings">
+        <div class="settings-header">
+          <h2>설정</h2>
+        </div>
+        
+        <div class="settings-list">
+          <div class="settings-group">
+            <h3>동기화 및 백업</h3>
+            <div class="settings-item">
+              <div class="settings-label-desc">
+                <span class="settings-title">PC 서버 주소 설정</span>
+                <span class="settings-desc">데이터 동기화 및 백업용 서버 URL</span>
+              </div>
+              <input type="text" class="settings-input" id="server-url-input" value="http://192.168.0.100:8080">
+            </div>
+            
+            <div class="settings-actions">
+              <button class="settings-btn primary" id="btn-sync-push">서버에 내 기록 백업하기 (Sync Push)</button>
+              <button class="settings-btn" id="btn-sync-pull">서버에서 기록 불러오기 (Sync Pull)</button>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>사용자 환경</h3>
+            <div class="settings-item">
+              <span class="settings-title">성경 폰트 크기</span>
+              <div class="font-size-slider-container">
+                <span>가</span>
+                <input type="range" class="font-slider" id="font-size-slider" min="14" max="24" value="17">
+                <span style="font-size: 20px;">가</span>
+              </div>
+            </div>
+            <div class="settings-item">
+              <span class="settings-title">알림 설정</span>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 하단 탭 내비게이션 바 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="screen-meditation">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.547 1.685 4.784 4.22 6.007-.272.935-.98 3.376-1.123 3.886-.18.647.218.638.46.478.188-.124 3.013-2.032 4.195-2.825.405.059.82.09 1.248.09 4.97 0 9-3.186 9-7.116S16.97 3 12 3z"/>
+        </svg>
+        <span>묵상</span>
+      </button>
+      
+      <button class="nav-item" data-target="screen-journey">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/>
+        </svg>
+        <span>여정</span>
+      </button>
+      
+      <button class="nav-item" data-target="screen-bulletin">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+        </svg>
+        <span>주보</span>
+      </button>
+      
+      <button class="nav-item" data-target="screen-settings">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+        <span>설정</span>
+      </button>
+    </nav>
+    
+    <!-- 주간 일정 모달 오버레이 (주차 selector 터치 시 개폐) -->
+    <div class="modal-overlay" id="weekly-modal">
+      <div class="weekly-modal-card">
+        <div class="weekly-modal-header">
+          <button class="week-nav-btn" id="modal-prev-week">&lt;</button>
+          <h3 id="modal-week-title">7월 1주차</h3>
+          <button class="week-nav-btn" id="modal-next-week">&gt;</button>
+          <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+        </div>
+        
+        <div class="weekly-modal-body">
+          <!-- 캘리그라피 말씀 영역 -->
+          <div class="calligraphy-card">
+            <div class="calligraphy-image-placeholder" id="modal-calligraphy-container">
+              <!-- SVG 캘리그라피와 잎새 일러스트가 동적으로 렌더링됨 -->
+            </div>
+            <p class="calligraphy-text" id="modal-calligraphy-text">"너희가 만일 길과 행위를 참으로 바르게 하여..."</p>
+          </div>
+          
+          <!-- 주간 일정표 테이블 -->
+          <div class="weekly-table-container">
+            <h4>주간 말씀 일정</h4>
+            <table class="weekly-schedule-table">
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>본문</th>
+                  <th>제목</th>
+                </tr>
+              </thead>
+              <tbody id="modal-schedule-tbody">
+                <!-- JS에서 동적으로 일정 행 로드 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="weekly-modal-footer">
+          <button class="modal-start-btn" id="modal-start-btn">이번 주 QT 시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 말씀 BGM 및 해설 바텀 시트 -->
+    <div class="bottom-sheet-overlay" id="bgm-sheet">
+      <div class="bottom-sheet-card">
+        <div class="bottom-sheet-drag-handle"></div>
+        <div class="bottom-sheet-header">
+          <h3>말씀 BGM (배경 해설)</h3>
+          <button class="sheet-close-btn" id="sheet-close-btn">&times;</button>
+        </div>
+        <div class="bottom-sheet-body" id="bgm-commentary-text">
+          <!-- 해설 텍스트 노출 -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

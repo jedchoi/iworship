@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이워십 (iWorship) 교회 관리자 콘솔 - AI 다중 배치 업로더</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <style>
+    :root {
+      --bg-color: #f7f5f0;
+      --card-bg: #ffffff;
+      --primary: #7c6893;
+      --primary-dark: #645179;
+      --accent: #d6a5bc;
+      --text-dark: #333333;
+      --text-muted: #666666;
+      --border-color: #e2dcd0;
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(124, 104, 147, 0.08);
+      --success: #2e7d32;
+      --danger: #c62828;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pretendard", -apple-system, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 60px; }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    header .header-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    header .header-subtitle { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+
+    .container { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover { background-color: rgba(124, 104, 147, 0.08); color: var(--primary); }
+    .tab-btn.active { background-color: var(--primary); color: white; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Card Box */
+    .card-box {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Form Elements */
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    .form-select, .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14.5px;
+      outline: none;
+      transition: border 0.2s;
+      background: #fafafa;
+    }
+
+    /* Drag Drop Area */
+    .drop-area {
+      border: 2px dashed var(--primary);
+      background-color: rgba(124, 104, 147, 0.04);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .drop-area:hover { background-color: rgba(124, 104, 147, 0.08); }
+    .drop-icon { font-size: 42px; color: var(--primary); margin-bottom: 10px; }
+    .drop-text { font-size: 15px; font-weight: 700; color: var(--primary-dark); }
+    .drop-subtext { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    #file-input { display: none; }
+
+    /* Thumbnails List */
+    .files-summary { margin-top: 16px; display: none; }
+    .files-summary-title { font-size: 14px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
+    .file-chip-container { display: flex; flex-wrap: wrap; gap: 8px; max-height: 160px; overflow-y: auto; padding: 4px; }
+    .file-chip {
+      background: #f0eaf3;
+      color: var(--primary-dark);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Button */
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      box-shadow: 0 4px 12px rgba(124, 104, 147, 0.2);
+    }
+    .btn-submit:hover { opacity: 0.92; }
+    .btn-submit:disabled { background: #cccccc; cursor: not-allowed; box-shadow: none; }
+
+    /* Progress Bar Box */
+    .progress-box {
+      display: none;
+      margin-top: 24px;
+      background: #faf8fb;
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+    }
+    .progress-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
+    .progress-bar-bg { width: 100%; height: 16px; background: #e2dcd0; border-radius: 8px; overflow: hidden; }
+    .progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s ease; }
+
+    /* Live Batch Logs Table */
+    .batch-log-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .batch-log-table th, .batch-log-table td { padding: 10px; text-align: left; font-size: 13.5px; border-bottom: 1px solid var(--border-color); }
+    .batch-log-table th { background: #efe9f3; color: var(--primary-dark); font-weight: 800; }
+    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 800; }
+    .status-success { background: #e8f5e9; color: var(--success); }
+    .status-error { background: #ffebee; color: var(--danger); }
+    .status-pending { background: #fff3e0; color: #ef6c00; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+    th { background: #f2ece4; color: var(--primary-dark); font-weight: 800; }
+    tr:hover { background-color: rgba(124, 104, 147, 0.03); }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; background: #eadae4; color: var(--primary-dark); }
+
+    /* Modal Overlay & Card */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 12px;
+      width: 90%; max-width: 800px; max-height: 85vh;
+      display: flex; flex-direction: column;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 18px; font-weight: 800; color: var(--primary-dark);
+      margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;
+    }
+    .modal-close-btn {
+      background: none; border: none; font-size: 24px; cursor: pointer; color: #888;
+    }
+
+    /* Bulletin 4-Page Grid */
+    .bulletin-card-item {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      background: #faf9fc;
+    }
+    .bulletin-header {
+      font-size: 16px; font-weight: 800; color: var(--primary-dark);
+      margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .bulletin-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .bulletin-page-thumb {
+      display: flex; flex-direction: column; align-items: center;
+      background: white; border: 1px solid #e0d8e8; border-radius: 8px; padding: 8px;
+    }
+    .bulletin-page-thumb img {
+      width: 100%; height: 220px; object-fit: contain; border-radius: 4px; cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .bulletin-page-thumb img:hover { transform: scale(1.03); }
+    .bulletin-page-label {
+      font-size: 11.5px; font-weight: 700; color: var(--primary); margin-top: 6px; text-align: center;
+    }
+
+    /* Sleek Segmented Control for SubTabs */
+    .segmented-bar {
+      display: inline-flex;
+      background: #e8e2ee;
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid #d4cbdc;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .segmented-btn {
+      border: none;
+      background: transparent;
+      padding: 10px 24px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .segmented-btn:hover { color: var(--primary-dark); }
+    .segmented-btn.active {
+      background: white;
+      color: var(--primary-dark);
+      font-weight: 800;
+      box-shadow: 0 3px 10px rgba(124, 104, 147, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <span>✝️ 아이워십 (iWorship) 교회 관리자 콘솔</span>
+    </div>
+    <div class="header-subtitle">
+      Gemini 2.0 Flash 비전 모델 기반 지능형 성경/기도/주보 자동 분할 & 데이터베이스 종합 관리 시스템
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-ocr', event)">📷 AI 사진 다중 일괄 등록</button>
+      <button class="tab-btn" onclick="switchTab('tab-bulletin', event)">📰 주보 등록</button>
+      <button class="tab-btn" onclick="switchTab('tab-database', event)">🗃️ DB 적재 데이터 조회</button>
+    </div>
+
+    <!-- TAB 1: AI 사진 다중 일괄 등록 -->
+    <div id="tab-ocr" class="tab-content active">
+      <div class="card-box">
+        <div class="card-title">✨ 지면 사진 다중 선택 (여러 장 사진 일괄 파싱 & DB 자동 적재)</div>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px;">
+          여러 장의 지면 사진(매일 QT 책자 여러 날짜 페이지)을 한꺼번에 올려보세요! <strong>Gemini 2.0 Flash 비전 AI</strong>가 순차적으로 처리하며, <strong>중간에 특정 사진이 실패하더라도 멈추지 않고 마지막 사진까지 계속 진행</strong>됩니다.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">업로드 지면 종류 선택</label>
+          <select id="ocr-type" class="form-select">
+            <option value="daily">📖 매일 성경 묵상 지면 (날짜, 성경 1~N절 본문 전체, 말씀 BGM 해설)</option>
+            <option value="weekly">📅 주간 안내 & 일정 지면 (주차, 시작일, 캘리그라피 말씀, 우모하 기도제목, 7일 일정표)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">지면 사진들 다중 선택 (여러 파일 드래그 & 클릭 가능)</label>
+          <div class="drop-area" id="drop-area" onclick="document.getElementById('file-input').click()">
+            <div class="drop-icon">📷📸</div>
+            <div class="drop-text">이곳을 클릭하거나 여러 장의 이미지 사진을 한꺼번에 올려주세요</div>
+            <div class="drop-subtext">지원 포맷: JPG, PNG, WEBP (Shift / Ctrl 키로 여러 장 다중 선택)</div>
+            <input type="file" id="file-input" accept="image/*" multiple onchange="handleFilesSelect(event)">
+          </div>
+
+          <div class="files-summary" id="files-summary">
+            <div class="files-summary-title" id="files-count-title"></div>
+            <div class="file-chip-container" id="files-chips"></div>
+          </div>
+        </div>
+
+        <button class="btn-submit" id="btn-ocr-submit" onclick="startBatchProcessing()" disabled>
+          ✨ 선택한 사진들 AI 일괄 파싱 & DB 자동 적재 시작
+        </button>
+
+        <!-- Progress Bar Box -->
+        <div class="progress-box" id="progress-box">
+          <div class="progress-header">
+            <span id="progress-status-text">Processing...</span>
+            <span id="progress-percent-text">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+          </div>
+
+          <table class="batch-log-table">
+            <thead>
+              <tr>
+                <th style="width: 8%;">순번</th>
+                <th style="width: 25%;">파일명</th>
+                <th style="width: 15%;">상태</th>
+                <th>파싱 분석 및 DB 저장 결과</th>
+              </tr>
+            </thead>
+            <tbody id="batch-log-tbody">
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: 주보 등록 -->
+    <div id="tab-bulletin" class="tab-content">
+      <div class="card-box">
+        <div class="card-title">📰 지능형 주보 사진 드래그 앤 드롭 업로드</div>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+          주보 사진 2장(가로 펼침) 또는 4장(세로 지면)을 이 박스에 드래그하여 업로드하세요.<br>
+          AI가 날짜를 자동으로 파싱하여 <strong>"xxxx년 xx월 xx일 주보"</strong> 라벨을 생성하고 1~4페이지로 정렬합니다.
+        </p>
+
+        <!-- Drag Drop Zone for Bulletins -->
+        <div id="bulletin-drop-area" class="drop-area" onclick="document.getElementById('bulletin-file-input').click()">
+          <div class="drop-icon">📰</div>
+          <div class="drop-text">주보 이미지 2장 또는 4장을 여기에 드래그하거나 클릭하여 선택하세요</div>
+          <div class="drop-subtext">가로 펼침 2장 또는 세로 사진 4장 (AI 자동 분할 & [XXXX년 XX월 XX일 주보] 자동 생성)</div>
+          <input type="file" id="bulletin-file-input" multiple accept="image/*" style="display: none;" onchange="handleBulletinFiles(this.files)">
+        </div>
+
+        <!-- File Summary Chips -->
+        <div id="bulletin-files-summary" class="files-summary" style="display: none; margin-top: 16px;">
+          <div class="files-summary-title">선택된 주보 사진 리스트 (<span id="bulletin-file-count">0</span>장):</div>
+          <div id="bulletin-chip-container" class="file-chip-container"></div>
+          <button id="bulletin-btn-submit" onclick="submitBulletinPhotos()" class="btn-submit" style="margin-top: 16px;">
+            ✨ 선택한 주보 이미지 AI 자동 분할 & [xxxx년 xx월 xx일 주보] 자동 등록 시작
+          </button>
+        </div>
+
+        <div id="bulletin-result" style="display:none; margin-top: 16px; padding: 16px; border-radius: 8px; background: #f4f8f5;">
+          <div id="bulletin-result-title" style="font-weight: 800; color: #2e7d32;"></div>
+          <pre id="bulletin-result-json" style="margin-top: 8px; font-size: 12px; white-space: pre-wrap;"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DB 적재 데이터 종합 조회 -->
+    <div id="tab-database" class="tab-content">
+      
+      <!-- Sleek Segmented Control Header -->
+      <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+        <div class="segmented-bar">
+          <button id="subtab-btn-qt" class="segmented-btn active" onclick="switchSubTab('qt')">
+            <span>📖</span> QT 말씀 / 기도 목록
+          </button>
+          <button id="subtab-btn-bulletin" class="segmented-btn" onclick="switchSubTab('bulletin')">
+            <span>📰</span> 주보 데이터 (4개 세로 지면)
+          </button>
+        </div>
+      </div>
+
+      <!-- SubTab 1: QT Data Table -->
+      <div id="subtab-content-qt" class="subtab-content">
+        <div class="card-box">
+          <div class="card-title" style="justify-content: space-between;">
+            <span>📖 PostgreSQL 적재된 QT 말씀 & 기도 데이터 목록</span>
+            <button onclick="loadDatabaseData()" style="padding: 7px 16px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; background: var(--primary); color: white; border: none; box-shadow: 0 2px 6px rgba(124, 104, 147, 0.2);">🔄 목록 새로고침</button>
+          </div>
+          
+          <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 10px;">
+            <table style="margin-top: 0;">
+              <thead>
+                <tr>
+                  <th style="width: 14%;">날짜</th>
+                  <th style="width: 25%;">말씀 제목</th>
+                  <th style="width: 22%;">성경 범위</th>
+                  <th style="width: 15%;">기도 카테고리</th>
+                  <th style="width: 11%;">절 수</th>
+                  <th style="width: 13%; text-align: center;">상세 보기</th>
+                </tr>
+              </thead>
+              <tbody id="db-scripture-tbody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">데이터를 불러오는 중입니다...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SubTab 2: Bulletin Data -->
+      <div id="subtab-content-bulletin" class="subtab-content" style="display: none;">
+        <div class="card-box">
+          <div class="card-title" style="justify-content: space-between;">
+            <span>🖼️ PostgreSQL 저장된 주보 목록 및 4개 세로 지면 보기</span>
+            <button onclick="loadSavedBulletins()" style="padding: 6px 14px; font-size: 13px; border-radius: 6px; cursor: pointer; background: var(--primary); color: white; border: none;">🔄 주보 목록 새로고침</button>
+          </div>
+          <div id="saved-bulletins-container">
+            <div style="text-align: center; color: var(--text-muted); padding: 24px;">저장된 주보 데이터를 불러오는 중입니다...</div>
+          </div>
+        </div>
+      <!-- TAB 3: DB 적재 데이터 종합 조회 끝 -->
+    </div>
+
+  </div>
+
+  <script>
+    let selectedFiles = [];
+
+    function switchTab(tabId, evt) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+      }
+      document.getElementById(tabId).classList.add('active');
+
+      if (tabId === 'tab-database') {
+        loadDatabaseData();
+        loadSavedBulletins();
+      }
+    }
+
+    function switchSubTab(subId) {
+      document.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.subtab-content').forEach(content => content.style.display = 'none');
+
+      if (subId === 'qt') {
+        document.getElementById('subtab-btn-qt').classList.add('active');
+        document.getElementById('subtab-content-qt').style.display = 'block';
+        loadDatabaseData();
+      } else if (subId === 'bulletin') {
+        document.getElementById('subtab-btn-bulletin').classList.add('active');
+        document.getElementById('subtab-content-bulletin').style.display = 'block';
+        loadSavedBulletins();
+      }
+    }
+
+    function handleFilesSelect(e) {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        selectedFiles = files;
+        renderFilesSummary();
+      }
+    }
+
+    function renderFilesSummary() {
+      const summaryBox = document.getElementById('files-summary');
+      const countTitle = document.getElementById('files-count-title');
+      const chipsContainer = document.getElementById('files-chips');
+      const submitBtn = document.getElementById('btn-ocr-submit');
+
+      summaryBox.style.display = 'block';
+      countTitle.innerText = `선택된 사진 파일 총 ${selectedFiles.length}개:`;
+      chipsContainer.innerHTML = '';
+
+      selectedFiles.forEach((file, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `📄 [${idx+1}] ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+        chipsContainer.appendChild(chip);
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = `✨ 선택한 사진 ${selectedFiles.length}장 AI 일괄 파싱 & DB 적재 시작`;
+    }
+
+    // Drag and drop handlers
+    const dropArea = document.getElementById('drop-area');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    dropArea.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = Array.from(dt.files);
+      if (files.length > 0) {
+        selectedFiles = files;
+        renderFilesSummary();
+      }
+    });
+
+    // Batch Processor Function (Runs with live progress & fault-tolerance)
+    async function startBatchProcessing() {
+      if (selectedFiles.length === 0) return;
+
+      const ocrType = document.getElementById('ocr-type').value;
+      const submitBtn = document.getElementById('btn-ocr-submit');
+      const progressBox = document.getElementById('progress-box');
+      const statusText = document.getElementById('progress-status-text');
+      const percentText = document.getElementById('progress-percent-text');
+      const progressFill = document.getElementById('progress-fill');
+      const logTbody = document.getElementById('batch-log-tbody');
+
+      submitBtn.disabled = true;
+      progressBox.style.display = 'block';
+      logTbody.innerHTML = '';
+
+      const total = selectedFiles.length;
+      let successCount = 0;
+      let failedCount = 0;
+
+      // Initialize table rows with 'pending' status
+      selectedFiles.forEach((file, idx) => {
+        const tr = document.createElement('tr');
+        tr.id = `log-row-${idx}`;
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><strong>${file.name}</strong></td>
+          <td><span class="status-badge status-pending" id="badge-${idx}">대기 중...</span></td>
+          <td id="detail-${idx}" style="color: var(--text-muted);">처리 대기 순서입니다.</td>
+        `;
+        logTbody.appendChild(tr);
+      });
+
+      const endpoint = ocrType === 'daily' 
+        ? '/api/v1/admin/upload-daily-photo' 
+        : '/api/v1/admin/upload-by-photo';
+
+      // Loop through each file cleanly
+      for (let i = 0; i < total; i++) {
+        const file = selectedFiles[i];
+        const badge = document.getElementById(`badge-${i}`);
+        const detail = document.getElementById(`detail-${i}`);
+
+        // Update progress UI
+        const currentNum = i + 1;
+        const percent = Math.round((i / total) * 100);
+        statusText.innerText = `🔄 [${currentNum} / ${total}] 번째 사진 AI 파싱 중: ${file.name}`;
+        percentText.innerText = `${percent}%`;
+        progressFill.style.width = `${percent}%`;
+
+        badge.className = 'status-badge status-pending';
+        badge.innerText = '파싱 중...';
+        detail.innerText = 'Gemini 2.0 Flash 비전 모델 분석 중...';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData
+          });
+
+          const resData = await response.json();
+
+          if (response.ok) {
+            successCount++;
+            badge.className = 'status-badge status-success';
+            badge.innerText = '✅ DB 저장 성공';
+
+            const d = resData.data || {};
+            if (ocrType === 'daily') {
+              detail.innerHTML = `<strong>[${d.date || '날짜'}] ${d.title || ''}</strong> (${d.passage || ''}) - 성경 ${d.verses_count || 0}개 구절 적재 완료`;
+            } else {
+              detail.innerHTML = `<strong>[${d.week_number || '주차'}] 주일 ${d.start_date || ''}</strong> - ${d.calligraphy_scripture || ''}`;
+            }
+          } else {
+            failedCount++;
+            badge.className = 'status-badge status-error';
+            badge.innerText = '❌ 실패';
+            detail.innerText = `에러: ${resData.detail || JSON.stringify(resData)}`;
+          }
+        } catch (err) {
+          failedCount++;
+          badge.className = 'status-badge status-error';
+          badge.innerText = '❌ 통신 실패';
+          detail.innerText = `네트워크 오류: ${err.toString()}`;
+        }
+      }
+
+      // Finish Progress UI
+      statusText.innerText = `🎉 총 ${total}장 처리 완료! (성공: ${successCount}개, 실패: ${failedCount}개)`;
+      percentText.innerText = `100%`;
+      progressFill.style.width = `100%`;
+      submitBtn.disabled = false;
+      submitBtn.innerText = `✨ 선택한 사진 ${selectedFiles.length}장 AI 일괄 파싱 & DB 적재 시작`;
+    }
+
+    // === Bulletin Drag & Drop Handlers ===
+    let selectedBulletinFiles = [];
+
+    function handleBulletinFiles(files) {
+      const fileArr = Array.from(files);
+      if (fileArr.length > 0) {
+        selectedBulletinFiles = fileArr;
+        renderBulletinFilesSummary();
+      }
+    }
+
+    function renderBulletinFilesSummary() {
+      const summaryBox = document.getElementById('bulletin-files-summary');
+      const fileCountSpan = document.getElementById('bulletin-file-count');
+      const chipContainer = document.getElementById('bulletin-chip-container');
+      const submitBtn = document.getElementById('bulletin-btn-submit');
+
+      summaryBox.style.display = 'block';
+      fileCountSpan.innerText = selectedBulletinFiles.length;
+      chipContainer.innerHTML = '';
+
+      selectedBulletinFiles.forEach((file, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `📰 [${idx+1}] ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+        chipContainer.appendChild(chip);
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.innerText = `✨ 선택한 주보 사진 ${selectedBulletinFiles.length}장 AI 자동 분할 & [XXXX년 XX월 XX일 주보] 자동 등록 시작`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const bDropArea = document.getElementById('bulletin-drop-area');
+      if (bDropArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          bDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        bDropArea.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = Array.from(dt.files);
+          if (files.length > 0) {
+            selectedBulletinFiles = files;
+            renderBulletinFilesSummary();
+          }
+        });
+      }
+    });
+
+    async function submitBulletinPhotos() {
+      if (selectedBulletinFiles.length === 0) {
+        alert("업로드할 주보 사진을 선택해주세요.");
+        return;
+      }
+
+      const formData = new FormData();
+      for (let i = 0; i < selectedBulletinFiles.length; i++) {
+        formData.append('files', selectedBulletinFiles[i]);
+      }
+
+      const resultBox = document.getElementById('bulletin-result');
+      const resultTitle = document.getElementById('bulletin-result-title');
+      const resultJson = document.getElementById('bulletin-result-json');
+      const submitBtn = document.getElementById('bulletin-btn-submit');
+
+      resultBox.style.display = 'block';
+      resultTitle.innerText = "⏳ AI가 주보 사진을 자동 분할하고 지면에서 날짜를 파싱하여 [XXXX년 XX월 XX일 주보]로 정렬 및 등록 중입니다...";
+      resultJson.innerText = "처리 중입니다. 잠시만 기다려주세요...";
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/v1/admin/upload-bulletin-photos-batch', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (response.ok) {
+          resultTitle.innerText = `🎉 ${data.message}`;
+          resultJson.innerText = JSON.stringify(data, null, 2);
+        } else {
+          resultTitle.innerText = "❌ 주보 처리 에러";
+          resultJson.innerText = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        resultTitle.innerText = "❌ 서버 통신 실패";
+        resultJson.innerText = err.toString();
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    let loadedDbData = [];
+
+    async function loadDatabaseData() {
+      const tbody = document.getElementById('db-scripture-tbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">DB 데이터 가져오는 중...</td></tr>';
+
+      try {
+        const res = await fetch('/api/v1/qt/bulk');
+        const data = await res.json();
+        loadedDbData = data;
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">아직 데이터베이스에 적재된 QT 데이터가 없습니다. 상단 [AI 사진 자동 등록] 탭에서 사진을 올려보세요!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach((item, idx) => {
+          const verseCount = item.verses ? item.verses.length : 0;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${item.date}</strong></td>
+            <td>${item.title || '<span style="color:#888;">(주일 - 빈 제목)</span>'}</td>
+            <td><span class="badge">${item.passage}</span></td>
+            <td>${item.weekly_pray_category || '-'}</td>
+            <td><strong>${verseCount}개 절</strong></td>
+            <td>
+              <button onclick="openJsonModal(${idx})" style="padding: 5px 10px; border-radius: 6px; border: 1px solid var(--primary); background: #f3edf7; color: var(--primary-dark); font-weight: 700; cursor: pointer;">🔍 JSON</button>
+              <button onclick="deleteQtRecord('${item.date}')" style="padding: 5px 10px; border-radius: 6px; border: 1px solid var(--danger); background: #ffebee; color: var(--danger); font-weight: 700; cursor: pointer; margin-left: 4px;">🗑️ 삭제</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 24px;">DB 데이터 읽기 에러: ${err.toString()}</td></tr>`;
+      }
+    }
+
+    async function deleteQtRecord(dateStr) {
+      if (!confirm(`[${dateStr}] QT 말씀 데이터를 정말 삭제하시겠습니까?`)) return;
+      try {
+        const res = await fetch(`/api/v1/admin/qt/${dateStr}`, { method: 'DELETE' });
+        const result = await res.json();
+        alert(result.message || '삭제되었습니다.');
+        loadDatabaseData();
+      } catch (err) {
+        alert('삭제 실패: ' + err.toString());
+      }
+    }
+
+    function openJsonModal(idx) {
+      if (!loadedDbData || !loadedDbData[idx]) return;
+      const item = loadedDbData[idx];
+      document.getElementById('json-modal-title').innerText = `📄 [${item.date}] QT 레코드 상세 JSON`;
+      document.getElementById('json-modal-content').innerText = JSON.stringify(item, null, 2);
+      document.getElementById('json-modal-overlay').style.display = 'flex';
+    }
+
+    function closeJsonModal(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('json-modal-overlay').style.display = 'none';
+    }
+
+    let savedBulletinsMap = {};
+
+    async function loadSavedBulletins() {
+      const container = document.getElementById('saved-bulletins-container');
+      if (!container) return;
+      container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">저장된 주보 목록 가져오는 중...</div>';
+
+      try {
+        const res = await fetch('/api/v1/church/bulletins');
+        const list = await res.json();
+        savedBulletinsMap = {};
+
+        if (list.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">아직 저장된 주보가 없습니다. 상단에서 주보 사진을 올려보세요!</div>';
+          return;
+        }
+
+        const pageLabels = ['1p (표지/설교)', '2p (예배안내)', '3p (소식모임)', '4p (클릭/약도)'];
+
+        container.innerHTML = '';
+        list.forEach(b => {
+          savedBulletinsMap[b.date] = [...(b.pages || [])];
+
+          const card = document.createElement('div');
+          card.className = 'bulletin-card-item';
+
+          let gridHtml = '';
+          const pages = b.pages || [];
+          pages.forEach((pUrl, pIdx) => {
+            const pName = pageLabels[pIdx] || `${pIdx+1}p`;
+            const prevBtn = pIdx > 0 ? `<button onclick="swapBulletinPage('${b.date}', ${pIdx}, ${pIdx - 1})" style="padding: 3px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; border: 1px solid var(--primary); background: #f3edf7; color: var(--primary-dark); cursor: pointer;" title="이 지면을 앞페이지로 이동">◀ 이전</button>` : '';
+            const nextBtn = pIdx < pages.length - 1 ? `<button onclick="swapBulletinPage('${b.date}', ${pIdx}, ${pIdx + 1})" style="padding: 3px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; border: 1px solid var(--primary); background: #f3edf7; color: var(--primary-dark); cursor: pointer;" title="이 지면을 다음페이지로 이동">다음 ▶</button>` : '';
+
+            gridHtml += `
+              <div class="bulletin-page-thumb">
+                <img src="${pUrl}" alt="${pName}" onclick="window.open('${pUrl}', '_blank')" title="클릭하여 새 탭에서 원본 이미지 보기">
+                <div class="bulletin-page-label">${pName}</div>
+                <div style="display: flex; gap: 4px; margin-top: 6px;">
+                  ${prevBtn}
+                  ${nextBtn}
+                </div>
+              </div>
+            `;
+          });
+
+          card.innerHTML = `
+            <div class="bulletin-header">
+              <span>📰 <strong>${b.label}</strong> <small style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">(발행일: ${b.date})</small></span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="editBulletinDate('${b.date}')" style="padding: 5px 12px; font-size: 12.5px; border-radius: 6px; cursor: pointer; background: #f3edf7; color: var(--primary-dark); border: 1px solid var(--primary); font-weight: 700;">✏️ 날짜 수정</button>
+                <button onclick="deleteBulletinRecord('${b.date}')" style="padding: 5px 12px; font-size: 12.5px; border-radius: 6px; cursor: pointer; background: #ffebee; color: var(--danger); border: 1px solid var(--danger); font-weight: 700;">🗑️ 삭제</button>
+              </div>
+            </div>
+            <div class="bulletin-grid">
+              ${gridHtml}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        container.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 24px;">주보 목록 로딩 실패: ${err.toString()}</div>`;
+      }
+    }
+
+    async function swapBulletinPage(dateStr, idxA, idxB) {
+      if (!savedBulletinsMap || !savedBulletinsMap[dateStr]) return;
+      const pages = [...savedBulletinsMap[dateStr]];
+      if (idxA < 0 || idxA >= pages.length || idxB < 0 || idxB >= pages.length) return;
+
+      const temp = pages[idxA];
+      pages[idxA] = pages[idxB];
+      pages[idxB] = temp;
+
+      try {
+        const res = await fetch(`/api/v1/admin/bulletin/${dateStr}/reorder`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pages: pages })
+        });
+        if (res.ok) {
+          loadSavedBulletins();
+        } else {
+          alert('지면 순서 변경 실패');
+        }
+      } catch (err) {
+        alert('순서 변경 에러: ' + err.toString());
+      }
+    }
+
+    async function deleteBulletinRecord(dateStr) {
+      if (!confirm(`[${dateStr} 주보]와 저장된 4개 세로 사진들을 정말 삭제하시겠습니까?`)) return;
+      try {
+        const res = await fetch(`/api/v1/admin/bulletin/${dateStr}`, { method: 'DELETE' });
+        const result = await res.json();
+        alert(result.message || '삭제되었습니다.');
+        loadSavedBulletins();
+      } catch (err) {
+        alert('삭제 실패: ' + err.toString());
+      }
+    }
+
+    async function editBulletinDate(oldDate) {
+      const newDate = prompt(`[${oldDate} 주보]의 새로운 발행 날짜를 입력하세요 (YYYY-MM-DD 형식):`, oldDate);
+      if (!newDate || newDate === oldDate) return;
+
+      try {
+        const res = await fetch(`/api/v1/admin/bulletin/${oldDate}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_date: newDate })
+        });
+        const result = await res.json();
+        if (res.ok) {
+          alert(`주보 날짜가 [${result.new_date}] (${result.new_label})로 수정되었습니다!`);
+          loadSavedBulletins();
+        } else {
+          alert('날짜 수정 실패: ' + (result.detail || '오류 발생'));
+        }
+      } catch (err) {
+        alert('날짜 수정 실패: ' + err.toString());
+      }
+    }
+
+    // Auto load bulletins on page start
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedBulletins();
+    });
+  </script>
+
+  <!-- JSON Detail Modal -->
+  <div id="json-modal-overlay" class="modal-overlay" style="display: none;" onclick="closeJsonModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span id="json-modal-title">📄 QT 데이터 상세 JSON</span>
+        <button class="modal-close-btn" onclick="closeJsonModal(event)">&times;</button>
+      </div>
+      <div style="overflow-y: auto; flex: 1; padding: 16px; background: #282c34; border-radius: 8px;">
+        <pre id="json-modal-content" style="color: #abb2bf; font-family: monospace; font-size: 13px; margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

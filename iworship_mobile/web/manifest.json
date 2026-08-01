@@ -1,0 +1,35 @@
+{
+    "name": "명선아이워십",
+    "short_name": "명선아이워십",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F7F5F0",
+    "theme_color": "#7C6893",
+    "description": "명선교회 청·장년 말씀 묵상 및 주보 앱 - 명선아이워십",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

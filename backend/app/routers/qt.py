@@ -142,7 +142,7 @@ async def sync_push(payload: SyncPushRequest, db: AsyncSession = Depends(get_db)
     모바일 기기의 로컬 데이터를 서버로 백업/동기화(Push)합니다.
     Last-Write-Wins 알고리즘을 사용해 더 최신인 데이터만 덮어씁니다.
     """
-    device_id = payload.device_id
+    device_id = payload.device_id.strip()
     for item in payload.notes:
         # DB에 기존 기록이 있는지 확인
         result = await db.execute(
@@ -153,31 +153,39 @@ async def sync_push(payload: SyncPushRequest, db: AsyncSession = Depends(get_db)
         )
         existing = result.scalars().first()
         
+        gratitude_val = item.get_gratitude()
+        verse_highlight_val = item.get_verse_highlight()
+        application_val = item.get_application()
+        prayer_val = item.get_prayer()
+        sunday_ibs_val = item.get_sunday_ibs()
+        sermon_notes_val = item.get_sermon_notes()
+        updated_at_val = item.updated_at or ""
+
         if existing:
             # 타임스탬프 비교 (새로 올라온 데이터가 더 최신인 경우에만 덮어씀)
-            if item.updated_at > existing.updated_at:
-                existing.gratitude = item.gratitude
-                existing.verse_highlight = item.verse_highlight
-                existing.application = item.application
-                existing.prayer = item.prayer
-                existing.sunday_ibs = item.sunday_ibs
+            if updated_at_val >= (existing.updated_at or ""):
+                existing.gratitude = gratitude_val
+                existing.verse_highlight = verse_highlight_val
+                existing.application = application_val
+                existing.prayer = prayer_val
+                existing.sunday_ibs = sunday_ibs_val
                 existing.action_completed = item.action_completed
-                existing.sermon_notes = item.sermon_notes
-                existing.updated_at = item.updated_at
+                existing.sermon_notes = sermon_notes_val
+                existing.updated_at = updated_at_val
                 db.add(existing)
         else:
             # 새로운 레코드 생성
             new_note = ServerQtNote(
                 device_id=device_id,
                 date=item.date,
-                gratitude=item.gratitude,
-                verse_highlight=item.verse_highlight,
-                application=item.application,
-                prayer=item.prayer,
-                sunday_ibs=item.sunday_ibs,
+                gratitude=gratitude_val,
+                verse_highlight=verse_highlight_val,
+                application=application_val,
+                prayer=prayer_val,
+                sunday_ibs=sunday_ibs_val,
                 action_completed=item.action_completed,
-                sermon_notes=item.sermon_notes,
-                updated_at=item.updated_at
+                sermon_notes=sermon_notes_val,
+                updated_at=updated_at_val
             )
             db.add(new_note)
             
@@ -192,8 +200,9 @@ async def sync_pull(
     """
     기기 변경/분실 시 서버에 저장된 사용자의 기록들을 모바일 기기로 내려받습니다(Pull).
     """
+    device_id_clean = device_id.strip()
     result = await db.execute(
-        select(ServerQtNote).where(ServerQtNote.device_id == device_id)
+        select(ServerQtNote).where(ServerQtNote.device_id == device_id_clean)
     )
     notes = result.scalars().all()
     
@@ -201,13 +210,18 @@ async def sync_pull(
     for n in notes:
         sync_items.append(QtNoteSyncItem(
             date=n.date,
-            gratitude=n.gratitude,
-            verse_highlight=n.verse_highlight,
-            application=n.application,
-            prayer=n.prayer,
-            sunday_ibs=n.sunday_ibs,
+            gratitude=n.gratitude or "",
+            verse_highlight=n.verse_highlight or "",
+            application=n.application or "",
+            prayer=n.prayer or "",
+            sunday_ibs=n.sunday_ibs or "",
             action_completed=n.action_completed,
-            sermon_notes=n.sermon_notes,
-            updated_at=n.updated_at
+            sermon_notes=n.sermon_notes or "",
+            updated_at=n.updated_at or "",
+            today_thanks=n.gratitude or "",
+            engraved_word=n.verse_highlight or "",
+            today_application=n.application or "",
+            today_prayer=n.prayer or "",
+            sermon_note=n.sermon_notes or ""
         ))
     return SyncPullResponse(notes=sync_items)

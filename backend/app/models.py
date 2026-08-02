@@ -81,7 +81,41 @@ class QtNoteSyncItem(BaseModel):
     sunday_ibs: Optional[str] = None
     action_completed: bool = False
     sermon_notes: Optional[str] = None
-    updated_at: str
+    updated_at: str = ""
+
+    # Aliases for Flutter UserNote compatibility
+    today_thanks: Optional[str] = None
+    engraved_word: Optional[str] = None
+    today_application: Optional[str] = None
+    today_prayer: Optional[str] = None
+    sunday_answer1: Optional[str] = None
+    sunday_answer2: Optional[str] = None
+    sunday_answer3: Optional[str] = None
+    sermon_note: Optional[str] = None
+
+    def get_gratitude(self) -> str:
+        return self.gratitude or self.today_thanks or ""
+
+    def get_verse_highlight(self) -> str:
+        return self.verse_highlight or self.engraved_word or ""
+
+    def get_application(self) -> str:
+        return self.application or self.today_application or ""
+
+    def get_prayer(self) -> str:
+        return self.prayer or self.today_prayer or ""
+
+    def get_sermon_notes(self) -> str:
+        return self.sermon_notes or self.sermon_note or ""
+
+    def get_sunday_ibs(self) -> str:
+        if self.sunday_ibs:
+            return self.sunday_ibs
+        ibs_parts = []
+        if self.sunday_answer1: ibs_parts.append(f"1. {self.sunday_answer1}")
+        if self.sunday_answer2: ibs_parts.append(f"2. {self.sunday_answer2}")
+        if self.sunday_answer3: ibs_parts.append(f"3. {self.sunday_answer3}")
+        return "\n".join(ibs_parts)
 
 class SyncPushRequest(BaseModel):
     device_id: str

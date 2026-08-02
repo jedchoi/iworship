@@ -387,22 +387,34 @@
           </div>
         </div>
 
+        <!-- Manual Drag & Drop Zone -->
+        <div id="manual-drop-area" class="drop-area" style="margin-bottom: 16px; padding: 24px 16px; border-color: #2e7d32; background: rgba(46, 125, 50, 0.04);" onclick="document.getElementById('manual-file-input-batch').click()">
+          <div class="drop-icon" style="color: #2e7d32;">📂🖼️</div>
+          <div class="drop-text" style="color: #1b5e20;">주보 이미지 4장(또는 1~4장)을 이 상자에 한꺼번에 드래그 앤 드롭하세요</div>
+          <div class="drop-subtext">드롭 시 1페이지(표지), 2페이지(설교), 3페이지(광고), 4페이지(소식)에 순서대로 자동 채워집니다.</div>
+          <input type="file" id="manual-file-input-batch" multiple accept="image/*" style="display: none;" onchange="handleManualBatchFiles(this.files)">
+        </div>
+
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
-          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div id="box-p1" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">🖼️ 1페이지 (표지)</label>
-            <input type="file" id="manual-p1" accept="image/*" class="form-input">
+            <input type="file" id="manual-p1" accept="image/*" class="form-input" onchange="previewManualPage(1, this.files[0])">
+            <div id="preview-p1" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
-          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div id="box-p2" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📖 2페이지 (설교)</label>
-            <input type="file" id="manual-p2" accept="image/*" class="form-input">
+            <input type="file" id="manual-p2" accept="image/*" class="form-input" onchange="previewManualPage(2, this.files[0])">
+            <div id="preview-p2" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
-          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div id="box-p3" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📢 3페이지 (광고)</label>
-            <input type="file" id="manual-p3" accept="image/*" class="form-input">
+            <input type="file" id="manual-p3" accept="image/*" class="form-input" onchange="previewManualPage(3, this.files[0])">
+            <div id="preview-p3" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
-          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div id="box-p4" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">✝️ 4페이지 (소식/기타)</label>
-            <input type="file" id="manual-p4" accept="image/*" class="form-input">
+            <input type="file" id="manual-p4" accept="image/*" class="form-input" onchange="previewManualPage(4, this.files[0])">
+            <div id="preview-p4" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
         </div>
 
@@ -1040,8 +1052,51 @@
       }
     }
 
-    // Auto load bulletins on page start
+    let manualFilesMap = { 1: null, 2: null, 3: null, 4: null };
+
+    function handleManualBatchFiles(files) {
+      if (!files || files.length === 0) return;
+      const sorted = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+      
+      for (let i = 0; i < Math.min(sorted.length, 4); i++) {
+        const pageNum = i + 1;
+        manualFilesMap[pageNum] = sorted[i];
+        
+        const dt = new DataTransfer();
+        dt.items.add(sorted[i]);
+        const inputElem = document.getElementById(`manual-p${pageNum}`);
+        if (inputElem) inputElem.files = dt.files;
+        
+        previewManualPage(pageNum, sorted[i]);
+      }
+    }
+
+    function previewManualPage(pageNum, file) {
+      const previewElem = document.getElementById(`preview-p${pageNum}`);
+      if (file) {
+        manualFilesMap[pageNum] = file;
+        if (previewElem) previewElem.innerText = `✔️ ${file.name}`;
+      } else {
+        manualFilesMap[pageNum] = null;
+        if (previewElem) previewElem.innerText = '';
+      }
+    }
+
+    // Auto load bulletins on page start and setup drag drop
     window.addEventListener('DOMContentLoaded', () => {
+      const dropArea = document.getElementById('manual-drop-area');
+      if (dropArea) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          if (dt && dt.files && dt.files.length > 0) {
+            handleManualBatchFiles(dt.files);
+          }
+        }, false);
+      }
       loadSavedBulletins();
     });
   </script>

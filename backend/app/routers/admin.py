@@ -612,11 +612,17 @@ async def reorder_bulletin_pages(date_str: str, req: ReorderBulletinPagesRequest
 # JSON 직접 일괄 등록 & 주보 수동 직접 등록 엔드포인트
 # ==========================================
 
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+
 @router.post("/qt/json-import")
-async def import_qt_json(payload: dict, db: AsyncSession = Depends(get_db)):
+async def import_qt_json(request: Request, db: AsyncSession = Depends(get_db)):
     """
     QT 말씀 컨텐츠를 JSON 데이터(단일 객체 또는 배열)로 직접 DB에 일괄 등록/수정합니다.
     """
+    try:
+        payload = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"JSON 파싱 실패: {str(e)}")
     items = []
     if isinstance(payload, list):
         items = payload

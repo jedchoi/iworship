@@ -247,21 +247,25 @@ class _QtViewScreenState extends State<QtViewScreen> with SingleTickerProviderSt
 
     if (scripture == null) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.menu_book, size: 48, color: Colors.grey),
-            const SizedBox(height: 12),
-            Text(
-              '[${provider.selectedDate}] 성경 묵상 본문이 아직 등록되지 않았습니다.',
-              style: const TextStyle(color: Colors.grey, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '관리자 웹(/admin)에서 지면 사진을 업로드해 보세요.',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_stories, size: 64, color: Color(0xFFB5A9C9)),
+              const SizedBox(height: 16),
+              Text(
+                '📖 [${provider.selectedDate}] 묵상 본문 준비 중',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF645179)),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '선택하신 날짜의 말씀 묵상 본문이 아직 준비 중입니다.\n데이터가 등록되면 이 날짜 화면에 바로 업데이트됩니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey, fontSize: 13.5, height: 1.5),
+              ),
+            ],
+          ),
         ),
       );
     }

@@ -28,7 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         body: IndexedStack(
           index: _currentIndex,
-          children: _pages,
+          children: [
+            const QtViewScreen(),
+            const JourneyScreen(),
+            const BulletinScreen(),
+            SettingsScreen(isActive: _currentIndex == 3),
+          ],
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,

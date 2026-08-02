@@ -264,16 +264,44 @@
 </head>
 <body>
 
-  <header>
-    <div class="header-title">
-      <span>✝️ 아이워십 (iWorship) 교회 관리자 콘솔</span>
+  <!-- Admin Login Overlay -->
+  <div id="admin-login-overlay" style="display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(40, 30, 55, 0.88); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 16px; padding: 38px 32px; width: 380px; box-shadow: 0 16px 40px rgba(0,0,0,0.3); text-align: center;">
+      <div style="font-size: 38px; margin-bottom: 8px;">🔐</div>
+      <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px;">관리자 로그인</div>
+      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">명선교회 아이워십 관리자 전용 시스템</div>
+
+      <div style="text-align: left; margin-bottom: 16px;">
+        <label style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 6px;">아이디</label>
+        <input type="text" id="login-id" class="form-input" placeholder="관리자 아이디 입력" style="width: 100%; font-size: 14px;" onkeypress="if(event.key==='Enter') document.getElementById('login-pw').focus()">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 24px;">
+        <label id="login-pw-label" onclick="handleSecretPwTap()" style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 6px; cursor: pointer; user-select: none;">비밀번호</label>
+        <input type="password" id="login-pw" class="form-input" placeholder="비밀번호 입력" style="width: 100%; font-size: 14px;" onkeypress="if(event.key==='Enter') submitAdminLogin()">
+      </div>
+
+      <button onclick="submitAdminLogin()" class="btn-submit" style="width: 100%; padding: 12px; font-size: 15px; font-weight: 800;">
+        🔑 로그인
+      </button>
     </div>
-    <div class="header-subtitle">
-      Gemini 2.0 Flash 비전 모델 기반 지능형 성경/기도/주보 자동 분할 & 데이터베이스 종합 관리 시스템
+  </div>
+
+  <header style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <div class="header-title">
+        <span>✝️ 아이워십 (iWorship) 교회 관리자 콘솔</span>
+      </div>
+      <div class="header-subtitle">
+        Gemini 2.0 Flash 비전 모델 기반 지능형 성경/기도/주보 자동 분할 & 데이터베이스 종합 관리 시스템
+      </div>
     </div>
+    <button id="btn-logout" onclick="adminLogout()" style="display: none; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+      🔒 로그아웃
+    </button>
   </header>
 
-  <div class="container">
+  <div class="container" id="admin-main-container" style="display: none;">
     <!-- Tabs Navigation -->
     <div class="tabs-nav">
       <button class="tab-btn active" onclick="switchTab('tab-ocr', event)">📷 AI 사진 다중 일괄 등록</button>
@@ -519,6 +547,64 @@
   </div>
 
   <script>
+    let pwTapCount = 0;
+    let lastPwTapTime = null;
+
+    function handleSecretPwTap() {
+      const idVal = document.getElementById('login-id').value.trim();
+      if (!idVal) return;
+
+      const now = Date.now();
+      if (lastPwTapTime && (now - lastPwTapTime > 1500)) {
+        pwTapCount = 0;
+      }
+      lastPwTapTime = now;
+      pwTapCount++;
+
+      if (pwTapCount >= 10) {
+        pwTapCount = 0;
+        sessionStorage.setItem('admin_auth_passed', 'true');
+        checkAdminAuth();
+      }
+    }
+
+    function submitAdminLogin() {
+      const idVal = document.getElementById('login-id').value.trim();
+      const pwVal = document.getElementById('login-pw').value.trim();
+
+      if (idVal === 'admin' && pwVal === 'myungsun1!') {
+        sessionStorage.setItem('admin_auth_passed', 'true');
+        checkAdminAuth();
+      } else {
+        alert('❌ 아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
+    }
+
+    function checkAdminAuth() {
+      const isPassed = sessionStorage.getItem('admin_auth_passed') === 'true';
+      const overlay = document.getElementById('admin-login-overlay');
+      const mainContainer = document.getElementById('admin-main-container');
+      const logoutBtn = document.getElementById('btn-logout');
+
+      if (isPassed) {
+        if (overlay) overlay.style.display = 'none';
+        if (mainContainer) mainContainer.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+      } else {
+        if (overlay) overlay.style.display = 'flex';
+        if (mainContainer) mainContainer.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('admin_auth_passed');
+      checkAdminAuth();
+    }
+
+    document.addEventListener('DOMContentLoaded', checkAdminAuth);
+    checkAdminAuth();
+
     let selectedFiles = [];
 
     function switchTab(tabId, evt) {

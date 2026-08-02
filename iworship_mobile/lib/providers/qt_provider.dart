@@ -75,13 +75,15 @@ class QtProvider with ChangeNotifier {
     }
   }
 
+  String get deviceId => _deviceId;
+
   QtProvider() {
     _initPreferences();
   }
 
   Future<void> _initPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    _deviceId = prefs.getString('device_id') ?? 'device_${DateTime.now().millisecondsSinceEpoch}';
+    _deviceId = prefs.getString('device_id') ?? 'IW-${(DateTime.now().millisecondsSinceEpoch % 1000000).toString().padLeft(6, '0')}';
     await prefs.setString('device_id', _deviceId);
     
     _fontSize = prefs.getDouble('font_size') ?? 17.0;
@@ -142,6 +144,15 @@ class QtProvider with ChangeNotifier {
     apiService.updateBaseUrl(url);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('server_url', url);
+    notifyListeners();
+  }
+
+  void updateDeviceId(String newId) async {
+    String trimmed = newId.trim();
+    if (trimmed.isEmpty) return;
+    _deviceId = trimmed;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('device_id', _deviceId);
     notifyListeners();
   }
 

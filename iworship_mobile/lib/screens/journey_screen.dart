@@ -1,11 +1,21 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/qt_provider.dart';
 import '../models/user_note.dart';
 
 class JourneyScreen extends StatefulWidget {
-  const JourneyScreen({Key? key}) : super(key: key);
+  final bool isActive;
+  final VoidCallback? onJumpToQt;
+
+  const JourneyScreen({
+    Key? key,
+    this.isActive = false,
+    this.onJumpToQt,
+  }) : super(key: key);
 
   @override
   State<JourneyScreen> createState() => _JourneyScreenState();
@@ -23,18 +33,45 @@ class _JourneyScreenState extends State<JourneyScreen> {
     _loadMonthNotes();
   }
 
+  @override
+  void didUpdateWidget(covariant JourneyScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isActive && widget.isActive) {
+      _loadMonthNotes();
+    }
+  }
+
   Future<void> _loadMonthNotes() async {
     setState(() => _loading = true);
     final provider = Provider.of<QtProvider>(context, listen: false);
 
-    // Load notes for current month from SQLite
     List<UserNote> allNotes = [];
     String monthPrefix = DateFormat('yyyy-MM').format(_currentMonth);
 
+    final prefs = kIsWeb ? await SharedPreferences.getInstance() : null;
+
     for (int day = 1; day <= 31; day++) {
       String dayStr = '$monthPrefix-${day.toString().padLeft(2, '0')}';
-      var note = await provider.dbHelper.getUserNote(dayStr);
-      if (note != null) {
+      UserNote? note;
+
+      if (kIsWeb && prefs != null) {
+        String? jsonStr = prefs.getString('user_note_$dayStr');
+        if (jsonStr != null && jsonStr.isNotEmpty) {
+          try {
+            note = UserNote.fromMap(json.decode(jsonStr));
+          } catch (_) {}
+        }
+      } else {
+        note = await provider.dbHelper.getUserNote(dayStr);
+      }
+
+      if (note != null &&
+          (note.todayThanks.isNotEmpty ||
+           note.engravedWord.isNotEmpty ||
+           note.todayApplication.isNotEmpty ||
+           note.todayPrayer.isNotEmpty ||
+           note.sundayAnswer1.isNotEmpty ||
+           note.sermonNote.isNotEmpty)) {
         allNotes.add(note);
       }
     }
@@ -85,13 +122,41 @@ class _JourneyScreenState extends State<JourneyScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Month Selector Header
+                  // Month Selector Header with Navigation Arrows
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        DateFormat('yyyy년 MM월').format(_currentMonth),
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF645179)),
+                      Row(
+                        children: [
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.chevron_left, color: Color(0xFF645179)),
+                            onPressed: () {
+                              setState(() {
+                                _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+                              });
+                              _loadMonthNotes();
+                            },
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('yyyy년 MM월').format(_currentMonth),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF645179)),
+                          ),
+                          const SizedBox(width: 4),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.chevron_right, color: Color(0xFF645179)),
+                            onPressed: () {
+                              setState(() {
+                                _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
+                              });
+                              _loadMonthNotes();
+                            },
+                          ),
+                        ],
                       ),
                       Text('완료 ${completedCount}일 / $daysInMonth일', style: const TextStyle(color: Colors.grey, fontSize: 13)),
                     ],
@@ -128,52 +193,63 @@ class _JourneyScreenState extends State<JourneyScreen> {
                         ),
                         const Divider(height: 20),
 
-                        // Days Grid
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 7,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                          ),
-                          itemCount: daysInMonth,
-                          itemBuilder: (context, index) {
-                            int dayNum = index + 1;
-                            String dateStr = '${DateFormat('yyyy-MM').format(_currentMonth)}-${dayNum.toString().padLeft(2, '0')}';
-                            bool isCompleted = _monthNotes.any((n) => n.date == dateStr);
+                        // Days Grid with proper day-of-week offset
+                        Builder(
+                          builder: (context) {
+                            DateTime firstDay = DateTime(_currentMonth.year, _currentMonth.month, 1);
+                            int firstWeekdayOffset = firstDay.weekday % 7;
+                            int totalGridCount = firstWeekdayOffset + daysInMonth;
 
-                            return GestureDetector(
-                              onTap: () {
-                                qtProvider.setDate(dateStr);
-                                DefaultTabController.of(context).animateTo(0);
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: isCompleted ? const Color(0xFF7C6893) : const Color(0xFFF7F5F0),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: dateStr == qtProvider.selectedDate ? Colors.redAccent : const Color(0xFFE2DCD0),
-                                    width: dateStr == qtProvider.selectedDate ? 2 : 1,
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      '$dayNum',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: isCompleted ? Colors.white : Colors.black87,
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 7,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                              ),
+                              itemCount: totalGridCount,
+                              itemBuilder: (context, index) {
+                                if (index < firstWeekdayOffset) {
+                                  return const SizedBox.shrink();
+                                }
+                                int dayNum = index - firstWeekdayOffset + 1;
+                                String dateStr = '${DateFormat('yyyy-MM').format(_currentMonth)}-${dayNum.toString().padLeft(2, '0')}';
+                                bool isCompleted = _monthNotes.any((n) => n.date == dateStr);
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    qtProvider.setDate(dateStr);
+                                    if (widget.onJumpToQt != null) widget.onJumpToQt!();
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isCompleted ? const Color(0xFF7C6893) : const Color(0xFFF7F5F0),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: dateStr == qtProvider.selectedDate ? Colors.redAccent : const Color(0xFFE2DCD0),
+                                        width: dateStr == qtProvider.selectedDate ? 2 : 1,
                                       ),
                                     ),
-                                    if (isCompleted)
-                                      const Icon(Icons.check_circle, size: 10, color: Color(0xFFD6A5BC)),
-                                  ],
-                                ),
-                              ),
+                                    alignment: Alignment.center,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '$dayNum',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: isCompleted ? Colors.white : Colors.black87,
+                                          ),
+                                        ),
+                                        if (isCompleted)
+                                          const Icon(Icons.check_circle, size: 10, color: Color(0xFFD6A5BC)),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
@@ -261,7 +337,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                                 trailing: const Icon(Icons.arrow_forward_ios, size: 14),
                                 onTap: () {
                                   qtProvider.setDate(note.date);
-                                  DefaultTabController.of(context).animateTo(0);
+                                  if (widget.onJumpToQt != null) widget.onJumpToQt!();
                                 },
                               ),
                             );

@@ -30,7 +30,14 @@ class _HomeScreenState extends State<HomeScreen> {
           index: _currentIndex,
           children: [
             const QtViewScreen(),
-            const JourneyScreen(),
+            JourneyScreen(
+              isActive: _currentIndex == 1,
+              onJumpToQt: () {
+                setState(() {
+                  _currentIndex = 0;
+                });
+              },
+            ),
             const BulletinScreen(),
             SettingsScreen(isActive: _currentIndex == 3),
           ],

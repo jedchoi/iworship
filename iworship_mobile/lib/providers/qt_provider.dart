@@ -223,17 +223,19 @@ class QtProvider with ChangeNotifier {
         _bulkScripturesCache = serverScriptures;
         _saveLocalCachedScriptures(serverScriptures);
         _findCurrentScriptureForDate(_selectedDate);
+        notifyListeners();
       }
 
-      DateTime dt = DateTime.parse(dateStr);
-      DateTime sundayDate = dt.subtract(Duration(days: dt.weekday % 7));
-      String sundayStr = DateFormat('yyyy-MM-dd').format(sundayDate);
-      var weeklyIntro = await apiService.fetchWeeklyIntro(sundayStr);
-      if (weeklyIntro != null) {
-        _currentWeeklyIntro = weeklyIntro;
-      }
-
-      notifyListeners();
+      try {
+        DateTime dt = DateTime.parse(dateStr);
+        DateTime sundayDate = dt.subtract(Duration(days: dt.weekday % 7));
+        String sundayStr = DateFormat('yyyy-MM-dd').format(sundayDate);
+        var weeklyIntro = await apiService.fetchWeeklyIntro(sundayStr);
+        if (weeklyIntro != null) {
+          _currentWeeklyIntro = weeklyIntro;
+          notifyListeners();
+        }
+      } catch (_) {}
     } catch (e) {
       if (kDebugMode) print('서버 오프라인 대기 (로컬 캐시 사용 중): $e');
     }
@@ -261,7 +263,7 @@ class QtProvider with ChangeNotifier {
     }
   }
 
-  // 웹 환경 SharedPreferences 전용 사용자 노트 헬퍼
+  // 웹 전용 SharedPreferences 헬퍼
   Future<UserNote?> _getWebUserNote(String dateStr) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -284,31 +286,37 @@ class QtProvider with ChangeNotifier {
     }
   }
 
-  // === 사용자 묵상 노트 저장 & 로컬 DB 적재 ===
+  // === 사용자 묵상 노트 단일 저장 (앱: SQLite 100% / 웹: SharedPreferences 100%) ===
   Future<void> saveUserNote({
-    String todayThanks = '',
-    String engravedWord = '',
-    String todayApplication = '',
-    String todayPrayer = '',
-    String sundayAnswer1 = '',
-    String sundayAnswer2 = '',
-    String sundayAnswer3 = '',
-    String sermonNote = '',
+    String? todayThanks,
+    String? engravedWord,
+    String? todayApplication,
+    String? todayPrayer,
+    String? sundayAnswer1,
+    String? sundayAnswer2,
+    String? sundayAnswer3,
+    String? sermonNote,
   }) async {
+    UserNote current = _currentUserNote ?? UserNote(
+      date: _selectedDate,
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
     UserNote newNote = UserNote(
       date: _selectedDate,
-      todayThanks: todayThanks,
-      engravedWord: engravedWord,
-      todayApplication: todayApplication,
-      todayPrayer: todayPrayer,
-      sundayAnswer1: sundayAnswer1,
-      sundayAnswer2: sundayAnswer2,
-      sundayAnswer3: sundayAnswer3,
-      sermonNote: sermonNote,
+      todayThanks: todayThanks ?? current.todayThanks,
+      engravedWord: engravedWord ?? current.engravedWord,
+      todayApplication: todayApplication ?? current.todayApplication,
+      todayPrayer: todayPrayer ?? current.todayPrayer,
+      sundayAnswer1: sundayAnswer1 ?? current.sundayAnswer1,
+      sundayAnswer2: sundayAnswer2 ?? current.sundayAnswer2,
+      sundayAnswer3: sundayAnswer3 ?? current.sundayAnswer3,
+      sermonNote: sermonNote ?? current.sermonNote,
       updatedAt: DateTime.now().toIso8601String(),
       isSynced: 0,
     );
 
+    // 플랫폼별 단일 전담 저장소 사용 (용량 중복 없음)
     if (kIsWeb) {
       await _saveWebUserNote(newNote);
     } else {
@@ -319,6 +327,45 @@ class QtProvider with ChangeNotifier {
 
     // 서버로 백그라운드 동기화 (LWW Push)
     triggerSyncPush();
+  }
+
+  // 실시간 타이핑 중 한글 조합 분리 방지용 무소음(Silent) 저장 헬퍼 (notifyListeners 미호출)
+  Future<void> saveUserNoteSilently({
+    String? todayThanks,
+    String? engravedWord,
+    String? todayApplication,
+    String? todayPrayer,
+    String? sundayAnswer1,
+    String? sundayAnswer2,
+    String? sundayAnswer3,
+    String? sermonNote,
+  }) async {
+    UserNote current = _currentUserNote ?? UserNote(
+      date: _selectedDate,
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
+    UserNote newNote = UserNote(
+      date: _selectedDate,
+      todayThanks: todayThanks ?? current.todayThanks,
+      engravedWord: engravedWord ?? current.engravedWord,
+      todayApplication: todayApplication ?? current.todayApplication,
+      todayPrayer: todayPrayer ?? current.todayPrayer,
+      sundayAnswer1: sundayAnswer1 ?? current.sundayAnswer1,
+      sundayAnswer2: sundayAnswer2 ?? current.sundayAnswer2,
+      sundayAnswer3: sundayAnswer3 ?? current.sundayAnswer3,
+      sermonNote: sermonNote ?? current.sermonNote,
+      updatedAt: DateTime.now().toIso8601String(),
+      isSynced: 0,
+    );
+
+    _currentUserNote = newNote;
+
+    if (kIsWeb) {
+      await _saveWebUserNote(newNote);
+    } else {
+      await dbHelper.upsertUserNote(newNote);
+    }
   }
 
   Future<void> triggerSyncPush() async {

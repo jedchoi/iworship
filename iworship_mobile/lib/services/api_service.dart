@@ -7,7 +7,7 @@ class ApiService {
   late Dio _dio;
   String baseUrl;
 
-  ApiService({this.baseUrl = 'http://localhost:8000'}) {
+  ApiService({this.baseUrl = 'http://168.110.63.231:8000'}) {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 5),

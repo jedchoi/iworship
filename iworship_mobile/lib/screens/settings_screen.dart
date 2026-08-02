@@ -56,8 +56,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               runSpacing: 8,
               children: [
                 ActionChip(
+                  avatar: const Icon(Icons.cloud_done, size: 16),
+                  label: const Text('☁️ 오라클 실서버 (168.110.63.231:8000)'),
+                  onPressed: () {
+                    _urlCtrl.text = 'http://168.110.63.231:8000';
+                  },
+                ),
+                ActionChip(
                   avatar: const Icon(Icons.phone_android, size: 16),
-                  label: const Text('📱 실제 스마트폰 (192.168.45.21)'),
+                  label: const Text('📱 스마트폰 (192.168.45.21)'),
                   onPressed: () {
                     _urlCtrl.text = 'http://192.168.45.21:8000';
                   },
@@ -71,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.language, size: 16),
-                  label: const Text('🖥️ 웹/로컬 (localhost)'),
+                  label: const Text('🖥️ 로컬 (localhost)'),
                   onPressed: () {
                     _urlCtrl.text = 'http://localhost:8000';
                   },

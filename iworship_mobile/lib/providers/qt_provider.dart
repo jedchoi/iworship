@@ -90,7 +90,7 @@ class QtProvider with ChangeNotifier {
     if (kIsWeb) {
       defaultServer = Uri.base.origin;
     } else {
-      defaultServer = 'http://10.0.2.2:8000';
+      defaultServer = 'http://168.110.63.231:8000';
     }
 
     final savedServer = prefs.getString('server_url');

@@ -18,7 +18,7 @@ async def get_bulk_qt(db: AsyncSession = Depends(get_db)):
     """
     모바일 앱 구동 시 오프라인 캐시 적재를 위해 전체 성경 말씀 묵상 본문을 반환합니다.
     """
-    result = await db.execute(select(DailyScripture))
+    result = await db.execute(select(DailyScripture).order_by(DailyScripture.date.desc()))
     scriptures = result.scalars().all()
     
     response = []

@@ -211,13 +211,7 @@ class QtProvider with ChangeNotifier {
       if (serverScriptures.isNotEmpty) {
         _bulkScripturesCache = serverScriptures;
         _saveLocalCachedScriptures(serverScriptures);
-        _findCurrentScriptureForDate(dateStr);
-
-        // 신규 설치/재설치 시 선택 날짜에 본문이 없으면 서버에 적재된 가장 최근 날짜로 자동 선택
-        if (_currentScripture == null) {
-          _selectedDate = serverScriptures.first.date;
-          _findCurrentScriptureForDate(_selectedDate);
-        }
+        _findCurrentScriptureForDate(_selectedDate);
       }
 
       DateTime dt = DateTime.parse(dateStr);

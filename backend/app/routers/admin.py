@@ -606,3 +606,148 @@ async def reorder_bulletin_pages(date_str: str, req: ReorderBulletinPagesRequest
         "pages": req.pages,
         "message": f"[{date_str}] 주보의 지면 순서가 변경되었습니다."
     }
+
+
+# ==========================================
+# JSON 직접 일괄 등록 & 주보 수동 직접 등록 엔드포인트
+# ==========================================
+
+@router.post("/qt/json-import")
+async def import_qt_json(payload: dict, db: AsyncSession = Depends(get_db)):
+    """
+    QT 말씀 컨텐츠를 JSON 데이터(단일 객체 또는 배열)로 직접 DB에 일괄 등록/수정합니다.
+    """
+    items = []
+    if isinstance(payload, list):
+        items = payload
+    elif isinstance(payload, dict):
+        if "items" in payload and isinstance(payload["items"], list):
+            items = payload["items"]
+        else:
+            items = [payload]
+    else:
+        raise HTTPException(status_code=400, detail="올바른 JSON 객체 또는 배열 형식이 아닙니다.")
+
+    success_count = 0
+    updated_dates = []
+
+    for item in items:
+        date_str = item.get("date")
+        if not date_str:
+            continue
+
+        title = item.get("title", "")
+        passage = item.get("passage", "")
+        verses = item.get("verses_json", item.get("verses", []))
+        if isinstance(verses, list):
+            verses_json = json.dumps(verses, ensure_ascii=False)
+        else:
+            verses_json = str(verses)
+
+        commentary = item.get("bgm_commentary", item.get("commentary", ""))
+        weekly_pray_category = item.get("weekly_pray_category", "공동체 기도")
+        weekly_prayer = item.get("weekly_prayer", "")
+        calligraphy_text = item.get("calligraphy_text", "")
+        calligraphy_ref = item.get("calligraphy_ref", "")
+
+        # 주일(일요일)은 제목을 빈 문자열로 보정
+        title = post_process_scripture_title(date_str, title)
+
+        res = await db.execute(select(DailyScripture).where(DailyScripture.date == date_str))
+        existing = res.scalars().first()
+
+        if existing:
+            existing.title = title
+            existing.passage = passage
+            existing.verses_json = verses_json
+            existing.bgm_commentary = commentary
+            existing.weekly_pray_category = weekly_pray_category
+            existing.weekly_prayer = weekly_prayer
+            existing.calligraphy_text = calligraphy_text
+            existing.calligraphy_ref = calligraphy_ref
+            db.add(existing)
+        else:
+            new_scripture = DailyScripture(
+                date=date_str,
+                title=title,
+                passage=passage,
+                verses_json=verses_json,
+                bgm_commentary=commentary,
+                weekly_pray_category=weekly_pray_category,
+                weekly_prayer=weekly_prayer,
+                calligraphy_text=calligraphy_text,
+                calligraphy_ref=calligraphy_ref
+            )
+            db.add(new_scripture)
+        
+        success_count += 1
+        updated_dates.append(date_str)
+
+    await db.commit()
+    return {
+        "status": "success",
+        "count": success_count,
+        "updated_dates": updated_dates,
+        "message": f"총 {success_count}건의 QT 말씀 데이터가 성공적으로 적재/갱신되었습니다."
+    }
+
+
+@router.post("/bulletin/manual")
+async def create_bulletin_manual(
+    date_str: str = Form(..., description="주보 날짜 (YYYY-MM-DD)"),
+    label: Optional[str] = Form(None, description="주보 제목 라벨 (선택입력)"),
+    page1: Optional[UploadFile] = File(None, description="1페이지 표지 이미지"),
+    page2: Optional[UploadFile] = File(None, description="2페이지 설교 이미지"),
+    page3: Optional[UploadFile] = File(None, description="3페이지 광고 이미지"),
+    page4: Optional[UploadFile] = File(None, description="4페이지 소식 이미지"),
+    page5: Optional[UploadFile] = File(None, description="기타 추가 지면 이미지"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    AI 파싱 없이 교역자가 주보 이미지들을 순서대로 지정하여 수동으로 직접 등록합니다.
+    """
+    if not date_str:
+        raise HTTPException(status_code=400, detail="주보 날짜는 필수 입력값입니다.")
+
+    bulletin_label = label or f"{date_str[:4]}년 {date_str[5:7]}월 {date_str[8:10]}일 주보"
+    upload_files = [page1, page2, page3, page4, page5]
+    pages_urls = []
+
+    for idx, up_file in enumerate(upload_files):
+        if up_file and up_file.filename:
+            content = await up_file.read()
+            if content:
+                filename = f"bulletin_{date_str}_p{idx+1}.jpg"
+                filepath = os.path.join(BULLETINS_DIR, filename)
+                with open(filepath, "wb") as f:
+                    f.write(content)
+                pages_urls.append(f"/static/bulletins/{filename}")
+
+    if not pages_urls:
+        raise HTTPException(status_code=400, detail="최소 1개 이상의 주보 이미지 파일을 첨부해야 합니다.")
+
+    res = await db.execute(select(Bulletin).where(Bulletin.date == date_str))
+    existing = res.scalars().first()
+
+    if existing:
+        existing.label = bulletin_label
+        existing.pages_json = json.dumps(pages_urls, ensure_ascii=False)
+        db.add(existing)
+    else:
+        new_bulletin = Bulletin(
+            date=date_str,
+            label=bulletin_label,
+            pages_json=json.dumps(pages_urls, ensure_ascii=False)
+        )
+        db.add(new_bulletin)
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "date": date_str,
+        "label": bulletin_label,
+        "pages": pages_urls,
+        "message": f"[{date_str}] 주보 {len(pages_urls)}개 지면이 수동으로 성공적으로 등록되었습니다."
+    }
+

@@ -341,12 +341,79 @@
         </div>
 
       </div>
+
+      <!-- QT JSON 직접 일괄 적재 카드 -->
+      <div class="card-box" style="border: 2px solid var(--primary-dark);">
+        <div class="card-title">📄 QT 말씀 JSON 데이터 직접 적재 / 파일 업로드</div>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+          미리 준비된 QT 말씀 JSON 텍스트를 직접 붙여넣거나 <strong>.json 파일</strong>을 업로드하여 DB에 0.1초 만에 직접 일괄적재합니다. (AI 파싱 미사용)
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">JSON 파일 선택 (.json)</label>
+          <input type="file" id="json-file-input" accept=".json" class="form-input" onchange="loadJsonFile(event)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">JSON 데이터 붙여넣기 (단일 객체 또는 배열)</label>
+          <textarea id="json-text-input" class="form-textarea" rows="7" placeholder='[{"date": "2026-08-02", "title": "", "passage": "예레미야 22:1-9", "verses_json": "[{\"num\":1,\"text\":\"...\"}]"}]'></textarea>
+        </div>
+
+        <button onclick="submitQtJsonImport()" class="btn-submit" style="background: linear-gradient(135deg, var(--primary-dark), #4a3a5e);">
+          📥 QT JSON 데이터 즉시 적재 시작
+        </button>
+      </div>
+
     </div>
 
     <!-- TAB 2: 주보 등록 -->
     <div id="tab-bulletin" class="tab-content">
+      
+      <!-- 1. 수동 주보 직접 등록 카드 (AI 미사용) -->
+      <div class="card-box" style="border: 2px solid var(--primary);">
+        <div class="card-title">✍️ 주보 수동 직접 등록 (AI 미사용 - 순서 지정 발행)</div>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+          AI API 호출 없이 <strong>주보 날짜와 1, 2, 3, 4페이지 이미지를 지정하여 수동으로 즉시 발행</strong>합니다.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label class="form-label">주보 날짜 (YYYY-MM-DD) <span style="color:red;">*</span></label>
+            <input type="date" id="manual-bulletin-date" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">주보 제목 라벨 (선택 입력)</label>
+            <input type="text" id="manual-bulletin-label" class="form-input" placeholder="예: 2026년 08월 09일 주보">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label class="form-label" style="font-size: 13px;">🖼️ 1페이지 (표지)</label>
+            <input type="file" id="manual-p1" accept="image/*" class="form-input">
+          </div>
+          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label class="form-label" style="font-size: 13px;">📖 2페이지 (설교)</label>
+            <input type="file" id="manual-p2" accept="image/*" class="form-input">
+          </div>
+          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label class="form-label" style="font-size: 13px;">📢 3페이지 (광고)</label>
+            <input type="file" id="manual-p3" accept="image/*" class="form-input">
+          </div>
+          <div style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label class="form-label" style="font-size: 13px;">✝️ 4페이지 (소식/기타)</label>
+            <input type="file" id="manual-p4" accept="image/*" class="form-input">
+          </div>
+        </div>
+
+        <button onclick="submitManualBulletin()" class="btn-submit" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+          🚀 주보 즉시 수동 발행
+        </button>
+      </div>
+
+      <!-- 2. 지능형 주보 사진 드래그 앤 드롭 업로드 카드 -->
       <div class="card-box">
-        <div class="card-title">📰 지능형 주보 사진 드래그 앤 드롭 업로드</div>
+        <div class="card-title">🤖 AI 지능형 주보 사진 드래그 앤 드롭 업로드</div>
         <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
           주보 사진 2장(가로 펼침) 또는 4장(세로 지면)을 이 박스에 드래그하여 업로드하세요.<br>
           AI가 날짜를 자동으로 파싱하여 <strong>"xxxx년 xx월 xx일 주보"</strong> 라벨을 생성하고 1~4페이지로 정렬합니다.
@@ -886,6 +953,90 @@
         }
       } catch (err) {
         alert('날짜 수정 실패: ' + err.toString());
+      }
+    }
+
+    async function submitQtJsonImport() {
+      const jsonStr = document.getElementById('json-text-input').value.trim();
+      if (!jsonStr) {
+        alert('JSON 텍스트를 입력하거나 .json 파일을 선택하세요.');
+        return;
+      }
+      try {
+        const payload = JSON.parse(jsonStr);
+        const resp = await fetch('/api/v1/admin/qt/json-import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          alert('✅ ' + res.message);
+          document.getElementById('json-text-input').value = '';
+          if (typeof loadDatabaseData === 'function') loadDatabaseData();
+        } else {
+          alert('❌ 에러: ' + (res.detail || 'JSON 등록 실패'));
+        }
+      } catch (e) {
+        alert('❌ JSON 문법 오류입니다: ' + e.message);
+      }
+    }
+
+    function loadJsonFile(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('json-text-input').value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    async function submitManualBulletin() {
+      const dateStr = document.getElementById('manual-bulletin-date').value;
+      if (!dateStr) {
+        alert('주보 날짜를 선택해주세요.');
+        return;
+      }
+      const label = document.getElementById('manual-bulletin-label').value.trim();
+      const p1 = document.getElementById('manual-p1').files[0];
+      const p2 = document.getElementById('manual-p2').files[0];
+      const p3 = document.getElementById('manual-p3').files[0];
+      const p4 = document.getElementById('manual-p4').files[0];
+
+      if (!p1 && !p2 && !p3 && !p4) {
+        alert('최소 1개 이상의 주보 지면 사진을 선택해주세요.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('date_str', dateStr);
+      if (label) formData.append('label', label);
+      if (p1) formData.append('page1', p1);
+      if (p2) formData.append('page2', p2);
+      if (p3) formData.append('page3', p3);
+      if (p4) formData.append('page4', p4);
+
+      try {
+        const resp = await fetch('/api/v1/admin/bulletin/manual', {
+          method: 'POST',
+          body: formData
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          alert('✅ ' + res.message);
+          document.getElementById('manual-bulletin-date').value = '';
+          document.getElementById('manual-bulletin-label').value = '';
+          document.getElementById('manual-p1').value = '';
+          document.getElementById('manual-p2').value = '';
+          document.getElementById('manual-p3').value = '';
+          document.getElementById('manual-p4').value = '';
+          if (typeof loadSavedBulletins === 'function') loadSavedBulletins();
+        } else {
+          alert('❌ 에러: ' + (res.detail || '주보 수동 등록 실패'));
+        }
+      } catch (e) {
+        alert('❌ 수동 등록 요청 실패: ' + e.message);
       }
     }
 

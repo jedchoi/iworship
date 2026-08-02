@@ -279,10 +279,17 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        await provider.triggerSyncPush();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('🎉 [${provider.deviceId}] 코드로 묵상 기록이 서버에 성공적으로 백업되었습니다!')),
-                        );
+                        provider.updateDeviceId(_deviceIdCtrl.text.trim());
+                        bool success = await provider.triggerSyncPush();
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('🎉 [${provider.deviceId}] 코드로 묵상 기록이 서버에 성공적으로 백업되었습니다!')),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚠️ 백업에 실패했습니다. 서버 연결 상태를 확인해 주세요.')),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -298,19 +305,15 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                         side: const BorderSide(color: Color(0xFF645179)),
                       ),
                       onPressed: () async {
-                        String activeId = provider.deviceId;
-                        List<UserNote> restored = await provider.apiService.pullSyncNotes(activeId);
-                        if (restored.isEmpty) {
+                        provider.updateDeviceId(_deviceIdCtrl.text.trim());
+                        int count = await provider.restoreUserNotesFromBackup();
+                        if (count == 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('⚠️ [$activeId] 동기화 코드로 저장된 백업 데이터가 없습니다.')),
+                            SnackBar(content: Text('⚠️ [${provider.deviceId}] 동기화 코드로 저장된 백업 데이터가 없습니다.')),
                           );
                         } else {
-                          for (var note in restored) {
-                            await provider.dbHelper.upsertUserNote(note);
-                          }
-                          await provider.loadDataForDate(provider.selectedDate);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('🎉 [$activeId] 코드로 ${restored.length}개의 묵상 기록을 성공적으로 복원했습니다!')),
+                            SnackBar(content: Text('🎉 [${provider.deviceId}] 코드로 ${count}개의 묵상 기록을 성공적으로 복원했습니다!')),
                           );
                         }
                       },

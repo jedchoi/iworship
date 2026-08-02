@@ -368,16 +368,54 @@ class QtProvider with ChangeNotifier {
     }
   }
 
-  Future<void> triggerSyncPush() async {
-    if (kIsWeb) return;
-    List<UserNote> unsynced = await dbHelper.getUnsyncedNotes();
-    if (unsynced.isNotEmpty) {
-      bool success = await apiService.pushSyncNotes(_deviceId, unsynced);
-      if (success) {
-        for (var note in unsynced) {
+  Future<List<UserNote>> getAllUserNotesForBackup() async {
+    List<UserNote> allNotes = [];
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      for (String key in keys) {
+        if (key.startsWith('user_note_')) {
+          String? jsonStr = prefs.getString(key);
+          if (jsonStr != null && jsonStr.isNotEmpty) {
+            try {
+              allNotes.add(UserNote.fromMap(json.decode(jsonStr)));
+            } catch (_) {}
+          }
+        }
+      }
+    } else {
+      allNotes = await dbHelper.getAllUserNotes();
+    }
+    return allNotes;
+  }
+
+  Future<bool> triggerSyncPush() async {
+    List<UserNote> notesToBackup = await getAllUserNotesForBackup();
+    if (notesToBackup.isNotEmpty) {
+      bool success = await apiService.pushSyncNotes(_deviceId, notesToBackup);
+      if (success && !kIsWeb) {
+        for (var note in notesToBackup) {
           await dbHelper.markAsSynced(note.date);
         }
       }
+      return success;
     }
+    return true;
+  }
+
+  Future<int> restoreUserNotesFromBackup() async {
+    String activeId = _deviceId;
+    List<UserNote> restored = await apiService.pullSyncNotes(activeId);
+    if (restored.isNotEmpty) {
+      for (var note in restored) {
+        if (kIsWeb) {
+          await _saveWebUserNote(note);
+        } else {
+          await dbHelper.upsertUserNote(note);
+        }
+      }
+      await loadDataForDate(_selectedDate);
+    }
+    return restored.length;
   }
 }

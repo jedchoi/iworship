@@ -102,6 +102,14 @@ class DatabaseHelper {
     return maps.map((m) => UserNote.fromMap(m)).toList();
   }
 
+  Future<List<UserNote>> getAllUserNotes() async {
+    if (kIsWeb) return [];
+    final db = await instance.database;
+    if (db == null) return [];
+    final maps = await db.query('user_notes');
+    return maps.map((m) => UserNote.fromMap(m)).toList();
+  }
+
   Future<int> markAsSynced(String date) async {
     if (kIsWeb) return 0;
     final db = await instance.database;

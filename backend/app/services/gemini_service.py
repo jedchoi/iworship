@@ -90,7 +90,8 @@ DAILY_SCHEMA = {
 # 3. Helper: Multi-model Fallback Generator
 # ==========================================
 def _generate_with_fallback(prompt: str, image: Image.Image, response_schema):
-    api_key = os.environ.get("GEMINI_API_KEY")
+    raw_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = raw_key.strip().strip('"').strip("'")
     if not api_key:
         raise ValueError("GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
         

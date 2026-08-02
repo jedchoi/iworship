@@ -79,18 +79,32 @@ graph TD
 * 앱 구동 후 백그라운드 비동기 루틴이 서버의 신규 업데이트 유무를 자동으로 체크하여 최신 데이터로 로컬 캐시를 갱신.
 * 성도가 작성한 묵상 노트는 Device ID 기반 **LWW (Last-Write-Wins) 충돌 해결 알고리즘**을 거쳐 서버 백업 DB와 실시간 동기화.
 
-### 2) 🤖 Gemini AI 주보 3단계 전처리 파이프라인 & 관리자 정렬 (Admin Console)
-* **1회 통합 배치 파싱 (Single-Call Batch)**: 4개 주보 지면 업로드 시 API 호출 1회만으로 표지 좌상단 날짜와 1~4p 지면 속성(표지, 설교, 광고, 소식)을 자동 분류하여 처리 속도 400% 향상 및 API 429 Rate Limit 방지.
-* **관리자 콘솔 (`/admin`) 데이터 제어**:
-  * **`✏️ 날짜 수정`**: AI 오인식 시 주보/QT 날짜를 수동으로 변경 (디스크 파일명 및 DB 자동 동기화).
-  * **`🗑️ 삭제`**: 불필요하거나 잘못 등록된 주보/QT 데이터를 원클릭 삭제.
-  * **`◀ 이전` / `다음 ▶`**: AI 지면 순서가 뒤섞였을 경우 버튼 클릭 한 번으로 지면 순서를 교환하여 모바일 앱에 즉시 반영.
+### 2) 🔒 관리자 콘솔 로그인 보호 & 비밀 이스터에그 인증 (`/admin`)
+* **관리자 로그인 모달**: 외부 접근 방지를 위해 기본 지정 계정(`admin` / `myungsun1!`) 로그인 보안 적용.
+* **이스터에그 비밀 로그인**: ID 입력 상태에서 '비밀번호' 텍스트를 10회 연타 시 안내 팝업 없이 즉시 보안 로그인 승인.
+* **주보 4지면 개별 선택 & Reorder**: 4개 지면(표지, 설교, 공지, 소식) 개별 드롭다운 지정 및 원클릭 순서 교환 기능 제공.
 
 ### 3) 📖 주일 / 평일 맞춤형 QT 묵상 양식
 * **평일 묵상 양식**: 본문 묵상, 우모하 기도발전소(주간 공동체 기도), 아로새길 말씀 선택 자동 입력, 오늘의 감사, 적용 및 기도.
 * **주일 묵상 양식**: 주일 IBS (3가지 나눔 질문) 양식 제공 및 단일 **주일 설교 NOTE (설교 제목 & 메시지 메모)** 통합 카드 UI 제공.
+* **구절 묵상 메모 상시 노출**: 선택한 구절에 작성된 묵상 메모는 선택 해제 시에도 `✔️ 작성됨` 표시와 함께 구절 하단 상시 보임 상태 유지 (`isVerseSelected || hasMemo`).
 
-### 4) 🖼️ 시그니처 수채화 표지 스플래시 로딩 (Splash Screen)
+### 4) 💾 실시간 타이핑 자동 저장 & 앱 종료 후 100% 자동 복원
+* **실시간 저장**: 묵상 작성란 및 설교 노트 입력 시 타이핑 즉시 로컬 저장소에 자동 적재.
+* **앱 종료 후 재실행 보존**: 앱을 종료하거나 날짜를 이동하더라도 이전에 작성했던 모든 묵상글 및 설교 제목이 1초 만에 컨트롤러로 복원.
+* **한글 자모 분리 방지 (CJK IME Fix)**: 실시간 저장 시 `saveUserNoteSilently` 무소음 헬퍼를 적용하여 조합 중 한글이 `ㅁㅏㄹㅅㅡㅁ`으로 쪼개지는 현상 완전 해결.
+
+### 5) 🧭 여정 탭 피드 실시간 반영 & 묵상 탭 점프 UX
+* **실시간 피드 갱신**: 묵상 탭에서 글 작성 후 `🧭 여정` 탭 전환 시 앱 재시작 없이 1초 만에 달력 완주 체크 및 작성 글 피드가 실시간 반영.
+* **원클릭 묵상 탭 점프**: 여정 탭 상단 달력 박스나 하단 피드 카드를 누르면 해당 날짜 선택과 동시에 `📖 묵상` 탭으로 1초 만에 즉시 이동.
+* **달력 시작 요일 정밀 계산 & 월 이동 화살표 (`<`, `>`)**: 매월 1일의 실제 시작 요일(예: 8월 1일=토요일) 오프셋을 정확히 계산하여 달력 표시 및 월 이동 버튼 지원.
+
+### 6) ☁️ 기기 변경 / 전화번호(Sync ID) 1:1 서버 백업 & 복원 (Push / Pull)
+* **전화번호 백업/복원**: 개발자 모드(타이틀 10회 연타)에서 본인 전화번호를 동기화 코드로 입력 후 원클릭으로 서버에 전체 묵상 일지 백업(Push) 및 새 기기 복원(Pull) 가능.
+* **양방향 필드 호환 레이어**: `SharedPreferences` + `SQLite DB` + 메모리 3중 통합 스캔 및 백엔드 필드 매핑으로 데이터 손실 없이 100% 완벽 복원.
+* **독립 APK 다운로드 제공**: 안드로이드 전용 최신 배포 파일(`http://168.110.63.231:8000/static/app-release.apk`) 제공.
+
+### 7) 🖼️ 시그니처 수채화 표지 스플래시 로딩 (Splash Screen)
 * 실제 **'아이워십 청·장년용'** 교재의 수채화 명선교회 그림과 하단 손글씨 캘리그라피 문구를 화면 크기에 맞게 중앙 정렬(`BoxFit.contain`)하고, 하늘색 톤 배경(`Color(0xFF5C7B9E)`)과 조화롭게 배치한 감성 스플래시 화면 구동.
 
 ---
@@ -103,6 +117,7 @@ iworship/
 │   ├── app/
 │   │   ├── admin_static/           # 관리자 웹 콘솔 HTML/JS/CSS (/admin)
 │   │   ├── flutter_web/            # 빌드된 Flutter Web 정적 파일 (/app)
+│   │   ├── static/                 # 배포용 최신 APK 다운로드 파일 (/static/app-release.apk)
 │   │   ├── models/                 # SQLModel DB 테이블 데이터 구조
 │   │   ├── routers/                # REST API 엔드포인트 (admin, qt, bulletin)
 │   │   └── services/               # Gemini AI 파이프라인 서비스
@@ -113,7 +128,7 @@ iworship/
 │   ├── lib/
 │   │   ├── models/                 # Dart 데이터 모델 (DailyScripture, UserNote 등)
 │   │   ├── providers/              # QtProvider 상태 관리 및 동적 IP 감지
-│   │   ├── screens/                # UI 화면 (HomeScreen, QtViewScreen, BulletinScreen 등)
+│   │   ├── screens/                # UI 화면 (HomeScreen, QtViewScreen, JourneyScreen 등)
 │   │   └── services/               # ApiService, DatabaseHelper, BulletinCacheService
 │   ├── web/                        # Flutter Web PWA 패키징 파일 (index.html, manifest.json)
 │   └── pubspec.yaml
@@ -136,6 +151,7 @@ docker compose up -d --build
 * **관리자 웹 콘솔**: `http://localhost:8000/admin`
 * **모바일 웹 앱**: `http://localhost:8000/app/`
 * **Swagger API 문서**: `http://localhost:8000/docs`
+* **APK 직접 다운로드**: `http://localhost:8000/static/app-release.apk`
 
 ### 2) 모바일 앱 빌드 & 배포 (Flutter)
 ```bash
@@ -144,9 +160,15 @@ cd iworship_mobile
 # 패키지 설치
 flutter pub get
 
-# Flutter Web 빌드 및 백엔드 적용
+# 1. Flutter Web 빌드 및 백엔드 적용
 flutter build web --base-href "/app/"
-cp -r build/web/* ../backend/app/flutter_web/
+rsync -av --delete build/web/ ../backend/app/flutter_web/
+
+# 2. 안드로이드 APK 파일 빌드 및 배포
+flutter build apk --release
+cp build/app/outputs/flutter-apk/app-release.apk ../backend/app/static/
+
+# 3. 서버 재부팅
 cd ../backend && docker compose restart web
 ```
 

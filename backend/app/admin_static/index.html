@@ -398,51 +398,31 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
           <div id="box-p1" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">🖼️ 1페이지 (표지)</label>
-            <input type="file" id="manual-p1" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(1, this.files[0])">
-            <div style="display: flex; gap: 4px;">
-              <input type="text" id="manual-url-1" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchImageFromUrl(1);}">
-              <button onclick="fetchImageFromUrl(1)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
-            </div>
+            <input type="file" id="manual-p1" accept="image/*" class="form-input" onchange="previewManualPage(1, this.files[0])">
             <div id="preview-p1" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p2" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📖 2페이지 (설교)</label>
-            <input type="file" id="manual-p2" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(2, this.files[0])">
-            <div style="display: flex; gap: 4px;">
-              <input type="text" id="manual-url-2" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchImageFromUrl(2);}">
-              <button onclick="fetchImageFromUrl(2)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
-            </div>
+            <input type="file" id="manual-p2" accept="image/*" class="form-input" onchange="previewManualPage(2, this.files[0])">
             <div id="preview-p2" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p3" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📢 3페이지 (광고)</label>
-            <input type="file" id="manual-p3" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(3, this.files[0])">
-            <div style="display: flex; gap: 4px;">
-              <input type="text" id="manual-url-3" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchImageFromUrl(3);}">
-              <button onclick="fetchImageFromUrl(3)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
-            </div>
+            <input type="file" id="manual-p3" accept="image/*" class="form-input" onchange="previewManualPage(3, this.files[0])">
             <div id="preview-p3" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p4" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">✝️ 4페이지 (소식/기타)</label>
-            <input type="file" id="manual-p4" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(4, this.files[0])">
-            <div style="display: flex; gap: 4px;">
-              <input type="text" id="manual-url-4" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchImageFromUrl(4);}">
-              <button onclick="fetchImageFromUrl(4)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
-            </div>
+            <input type="file" id="manual-p4" accept="image/*" class="form-input" onchange="previewManualPage(4, this.files[0])">
             <div id="preview-p4" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p5" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📑 5페이지 (광고삽지)</label>
-            <input type="file" id="manual-p5" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(5, this.files[0])">
-            <div style="display: flex; gap: 4px;">
-              <input type="text" id="manual-url-5" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;" onkeydown="if(event.key==='Enter'){event.preventDefault(); fetchImageFromUrl(5);}">
-              <button onclick="fetchImageFromUrl(5)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
-            </div>
+            <input type="file" id="manual-p5" accept="image/*" class="form-input" onchange="previewManualPage(5, this.files[0])">
             <div id="preview-p5" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
         </div>
@@ -1047,43 +1027,40 @@
         submitBtn.innerText = '⏳ 주보 이미지 준비 및 수동 발행 처리 중...';
       }
 
-      // URL만 입력되어 있고 아직 불러오지 않은 항목 자동 불러오기 처리 (팝업 없음)
-      for (let i = 1; i <= 5; i++) {
-        const pInput = document.getElementById(`manual-p${i}`);
-        const uInput = document.getElementById(`manual-url-${i}`);
-        if ((!pInput || !pInput.files || !pInput.files[0]) && uInput && uInput.value.trim()) {
-          await fetchImageFromUrl(i);
-        }
+    async function submitManualBulletin() {
+      const dateStr = document.getElementById('manual-bulletin-date').value;
+      if (!dateStr) {
+        alert('주보 날짜를 선택해주세요.');
+        return;
+      }
+      const label = document.getElementById('manual-bulletin-label').value.trim();
+
+      const p1 = document.getElementById('manual-p1').files[0];
+      const p2 = document.getElementById('manual-p2').files[0];
+      const p3 = document.getElementById('manual-p3').files[0];
+      const p4 = document.getElementById('manual-p4').files[0];
+      const p5 = document.getElementById('manual-p5').files[0];
+
+      if (!p1 && !p2 && !p3 && !p4 && !p5) {
+        alert('최소 1개 이상의 주보 이미지 파일(드래그 앤 드롭 또는 선택)을 첨부해주세요.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-manual-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ 주보 수동 발행 처리 중...';
       }
 
       const formData = new FormData();
       formData.append('date_str', dateStr);
       if (label) formData.append('label', label);
 
-      let validCount = 0;
-      for (let i = 1; i <= 5; i++) {
-        const pInput = document.getElementById(`manual-p${i}`);
-        const uInput = document.getElementById(`manual-url-${i}`);
-        const file = pInput ? pInput.files[0] : null;
-        const urlStr = uInput ? uInput.value.trim() : '';
-
-        if (file) {
-          formData.append(`page${i}`, file);
-          validCount++;
-        } else if (urlStr) {
-          formData.append(`url${i}`, urlStr);
-          validCount++;
-        }
-      }
-
-      if (validCount === 0) {
-        alert('최소 1개 이상의 주보 이미지 파일 또는 웹 URL 주소를 입력해주세요.');
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerText = '🚀 주보 즉시 수동 발행';
-        }
-        return;
-      }
+      if (p1) formData.append('page1', p1);
+      if (p2) formData.append('page2', p2);
+      if (p3) formData.append('page3', p3);
+      if (p4) formData.append('page4', p4);
+      if (p5) formData.append('page5', p5);
 
       try {
         const resp = await fetch('/api/v1/admin/bulletin/manual', {
@@ -1097,10 +1074,8 @@
           document.getElementById('manual-bulletin-label').value = '';
           [1,2,3,4,5].forEach(i => {
             const pInput = document.getElementById(`manual-p${i}`);
-            const uInput = document.getElementById(`manual-url-${i}`);
             const prev = document.getElementById(`preview-p${i}`);
             if (pInput) pInput.value = '';
-            if (uInput) uInput.value = '';
             if (prev) prev.innerText = '';
           });
           if (typeof loadSavedBulletins === 'function') loadSavedBulletins();
@@ -1115,68 +1090,6 @@
           submitBtn.innerText = '🚀 주보 즉시 수동 발행';
         }
       }
-    }
-
-    async function fetchImageFromUrl(pageNum) {
-      const urlInput = document.getElementById(`manual-url-${pageNum}`);
-      const url = urlInput ? urlInput.value.trim() : '';
-      if (!url) return;
-
-      const previewElem = document.getElementById(`preview-p${pageNum}`);
-      if (previewElem) previewElem.innerHTML = '<span style="color:#645179; font-size:11px; font-weight:700;">⏳ 이미지 로딩 중...</span>';
-
-      let blob = null;
-      try {
-        const res = await fetch(url);
-        if (res.ok) blob = await res.blob();
-      } catch (e) {}
-
-      if (!blob) {
-        try {
-          blob = await loadImageAsBlob(url);
-        } catch (e) {}
-      }
-
-      if (blob) {
-        const file = new File([blob], `bulletin_page_${pageNum}.jpg`, { type: blob.type || 'image/jpeg' });
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        const inputElem = document.getElementById(`manual-p${pageNum}`);
-        if (inputElem) inputElem.files = dt.files;
-
-        const imgUrl = URL.createObjectURL(blob);
-        if (previewElem) {
-          previewElem.innerHTML = `<div style="margin-top:4px;"><img src="${imgUrl}" style="max-height:85px; max-width:100%; border-radius:6px; border:1px solid var(--primary); display:block; margin: 0 auto 4px;"><span style="color:#2e7d32; font-size:11px; font-weight:800;">✔️ 준비 완료 (${(blob.size/1024).toFixed(0)}KB)</span></div>`;
-        }
-      } else {
-        if (previewElem) {
-          previewElem.innerHTML = `<div style="margin-top:4px;"><img src="${url}" style="max-height:85px; max-width:100%; border-radius:6px; border:1px solid var(--primary); display:block; margin: 0 auto 4px;"><span style="color:#7c6893; font-size:11px; font-weight:800;">🔗 웹 이미지 미리보기 (발행 가능)</span></div>`;
-        }
-      }
-    }
-
-    function loadImageAsBlob(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth || img.width;
-            canvas.height = img.naturalHeight || img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob((blob) => {
-              if (blob) resolve(blob);
-              else reject(new Error('Canvas toBlob failed'));
-            }, 'image/jpeg', 0.92);
-          } catch (e) {
-            reject(e);
-          }
-        };
-        img.onerror = (e) => reject(e);
-        img.src = url;
-      });
     }
 
     function previewManualPage(pageNum, file) {

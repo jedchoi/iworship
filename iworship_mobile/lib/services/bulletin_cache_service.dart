@@ -48,8 +48,11 @@ class BulletinCacheService {
     return null;
   }
 
-  /// 서버에서 주보 지면 이미지를 다운로드 받아 로컬 저장소에 백업 캐시
+  /// 서버에서 주보 지면 이미지를 다운로드 받아 로컬 저장소에 백업 캐시 (이미 존재하면 데이터 0바이트 재사용)
   static Future<Uint8List?> downloadAndCacheImage(String fullUrl, String imgUrl) async {
+    Uint8List? existing = await getCachedImageBytes(imgUrl);
+    if (existing != null) return existing;
+
     try {
       final response = await _dio.get<List<int>>(
         fullUrl,
@@ -67,16 +70,5 @@ class BulletinCacheService {
       print('주보 이미지 백업 다운로드 실패 ($fullUrl): $e');
     }
     return null;
-  }
-
-  /// 캐시 전체 초기화 (새로고침 시 호출)
-  static Future<void> clearCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys();
-    for (String k in keys) {
-      if (k.startsWith('bulletin_img_') || k.startsWith('cached_bulletin_list')) {
-        await prefs.remove(k);
-      }
-    }
   }
 }

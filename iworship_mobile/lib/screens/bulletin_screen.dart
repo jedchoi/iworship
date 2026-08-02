@@ -103,12 +103,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
     }
   }
 
-  Future<void> _forceRefreshBulletins() async {
-    if (mounted) setState(() => _loading = true);
-    await BulletinCacheService.clearCache();
-    await _fetchAndSyncServerBulletins();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,7 +111,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _forceRefreshBulletins,
+            onPressed: _initAndSyncBulletins,
           ),
         ],
       ),

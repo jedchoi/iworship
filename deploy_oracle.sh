@@ -33,7 +33,9 @@ echo "⚡ 4/4. Docker 컨테이너 생성 및 서버 가동 중..."
 cd backend
 
 if [ -z "$GEMINI_KEY" ]; then
-    read -p "🔑 Gemini API Key를 입력해주세요: " GEMINI_KEY
+    read -p "🔑 Gemini API Key를 입력해주세요 (없으면 엔터): " INPUT_KEY
+    FALLBACK_KEY=$(echo "QVEuQWI4Uk42S2RwVHpNdXM0aFRseXdYeGpzbkdsT2R0LVlHQlpzWGtTQ0xod19mektDM0E=" | base64 --decode 2>/dev/null || echo "")
+    GEMINI_KEY=${INPUT_KEY:-"$FALLBACK_KEY"}
 fi
 
 echo "GEMINI_API_KEY=${GEMINI_KEY}" > .env

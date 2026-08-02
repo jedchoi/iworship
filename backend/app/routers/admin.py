@@ -521,24 +521,28 @@ async def delete_bulletin_record(date_str: str, db: AsyncSession = Depends(get_d
 
 
 class UpdateBulletinDateRequest(BaseModel):
-    new_date: str
+    new_date: Optional[str] = None
+    new_label: Optional[str] = None
 
 @router.patch("/bulletin/{old_date}")
 async def update_bulletin_date(old_date: str, req: UpdateBulletinDateRequest, db: AsyncSession = Depends(get_db)):
     """
-    주보의 발행 날짜 및 라벨 수정 (이미지 파일명도 새 날짜로 자동 변경)
+    주보의 발행 날짜 및 제목 라벨 수정 (날짜 변경 시 이미지 파일명도 새 날짜로 자동 변경)
     """
-    new_date = req.new_date.strip()
-    try:
-        dt_obj = datetime.strptime(new_date, "%Y-%m-%d")
-        new_label = f"{dt_obj.year}년 {dt_obj.month:02d}월 {dt_obj.day:02d}일 주보"
-    except Exception:
-        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다 (YYYY-MM-DD 형식 입력 필요).")
-
     res = await db.execute(select(Bulletin).where(Bulletin.date == old_date))
     bulletin = res.scalars().first()
     if not bulletin:
         raise HTTPException(status_code=404, detail="수정할 기존 주보 데이터를 찾을 수 없습니다.")
+
+    new_date = req.new_date.strip() if req.new_date else old_date
+    if req.new_label and req.new_label.strip():
+        new_label = req.new_label.strip()
+    else:
+        try:
+            dt_obj = datetime.strptime(new_date, "%Y-%m-%d")
+            new_label = f"{dt_obj.year}년 {dt_obj.month:02d}월 {dt_obj.day:02d}일 주보"
+        except Exception:
+            new_label = bulletin.label
 
     # 이미지 파일명을 새 날짜 파일명으로 변경
     try:
@@ -706,18 +710,17 @@ async def create_bulletin_manual(
     page2: Optional[UploadFile] = File(None, description="2페이지 설교 이미지 파일"),
     page3: Optional[UploadFile] = File(None, description="3페이지 광고 이미지 파일"),
     page4: Optional[UploadFile] = File(None, description="4페이지 소식 이미지 파일"),
-    page5: Optional[UploadFile] = File(None, description="5페이지 광고삽지 이미지 파일"),
     db: AsyncSession = Depends(get_db)
 ):
     """
     AI 파싱 없이 교역자가 주보 이미지 파일들을 순서대로 지정하여 수동으로 직접 등록합니다.
-    (1~5페이지 지원, 빈 지면 자동 제외)
+    (1~4페이지 지원, 빈 지면 자동 제외)
     """
     if not date_str:
         raise HTTPException(status_code=400, detail="주보 날짜는 필수 입력값입니다.")
 
-    bulletin_label = label or f"{date_str[:4]}년 {date_str[5:7]}월 {date_str[8:10]}일 주보"
-    upload_files = [page1, page2, page3, page4, page5]
+    bulletin_label = (label and label.strip()) or f"{date_str[:4]}년 {date_str[5:7]}월 {date_str[8:10]}일 주보"
+    upload_files = [page1, page2, page3, page4]
     pages_urls = []
 
     for up_file in upload_files:

@@ -373,57 +373,49 @@
       <div class="card-box" style="border: 2px solid var(--primary);">
         <div class="card-title">✍️ 주보 수동 직접 등록 (AI 미사용 - 순서 지정 발행)</div>
         <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
-          AI API 호출 없이 <strong>주보 날짜와 1, 2, 3, 4, 5페이지 이미지/URL 주소를 지정하여 수동으로 즉시 발행</strong>합니다.
+          AI API 호출 없이 <strong>주보 날짜와 1, 2, 3, 4페이지 이미지 파일들을 지정하여 수동으로 즉시 발행</strong>합니다.
         </p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-          <div>
-            <label class="form-label">주보 날짜 (YYYY-MM-DD) <span style="color:red;">*</span></label>
-            <input type="date" id="manual-bulletin-date" class="form-input">
-          </div>
-          <div>
-            <label class="form-label">주보 제목 라벨 (선택 입력)</label>
-            <input type="text" id="manual-bulletin-label" class="form-input" placeholder="예: 2026년 08월 09일 주보">
-          </div>
+        <div style="margin-bottom: 16px;">
+          <label class="form-label">주보 날짜 (YYYY-MM-DD) <span style="color:red;">*</span></label>
+          <input type="date" id="manual-bulletin-date" class="form-input">
         </div>
 
         <!-- Manual Drag & Drop Zone -->
         <div id="manual-drop-area" class="drop-area" style="margin-bottom: 16px; padding: 20px 16px; border-color: #2e7d32; background: rgba(46, 125, 50, 0.04);" onclick="document.getElementById('manual-file-input-batch').click()">
           <div class="drop-icon" style="color: #2e7d32; font-size: 32px;">📂🖼️</div>
-          <div class="drop-text" style="color: #1b5e20;">주보 이미지 파일들(1~5장)을 이 상자에 드래그 앤 드롭하세요</div>
-          <div class="drop-subtext">드롭 시 1페이지(표지), 2페이지(설교), 3페이지(광고), 4페이지(소식), 5페이지(광고삽지)에 순서대로 채워집니다.</div>
+          <div class="drop-text" style="color: #1b5e20;">주보 이미지 파일들(1~4장)을 이 상자에 드래그 앤 드롭하세요</div>
+          <div class="drop-subtext">드롭 시 1페이지(표지), 2페이지(설교), 3페이지(광고), 4페이지(소식)에 순서대로 채워집니다.</div>
           <input type="file" id="manual-file-input-batch" multiple accept="image/*" style="display: none;" onchange="handleManualBatchFiles(this.files)">
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
-          <div id="box-p1" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            <label class="form-label" style="font-size: 13px;">🖼️ 1페이지 (표지)</label>
-            <input type="file" id="manual-p1" accept="image/*" class="form-input" onchange="previewManualPage(1, this.files[0])">
+          <div id="box-p1" class="manual-page-box" style="background: #faf8fb; padding: 14px; border-radius: 10px; border: 2px dashed var(--border-color); text-align: center; transition: all 0.2s;" ondragover="handleSingleDragOver(event, 1)" ondragleave="handleSingleDragLeave(event, 1)" ondrop="handleSingleDrop(event, 1)">
+            <label class="form-label" style="font-size: 13px; font-weight: 800; color: var(--primary-dark);">🖼️ 1페이지 (표지)</label>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">📂 이 영역에 직접 드래그 앤 드롭</div>
+            <input type="file" id="manual-p1" accept="image/*" class="form-input" style="font-size: 12px;" onchange="previewManualPage(1, this.files[0])">
             <div id="preview-p1" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
-          <div id="box-p2" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            <label class="form-label" style="font-size: 13px;">📖 2페이지 (설교)</label>
-            <input type="file" id="manual-p2" accept="image/*" class="form-input" onchange="previewManualPage(2, this.files[0])">
+          <div id="box-p2" class="manual-page-box" style="background: #faf8fb; padding: 14px; border-radius: 10px; border: 2px dashed var(--border-color); text-align: center; transition: all 0.2s;" ondragover="handleSingleDragOver(event, 2)" ondragleave="handleSingleDragLeave(event, 2)" ondrop="handleSingleDrop(event, 2)">
+            <label class="form-label" style="font-size: 13px; font-weight: 800; color: var(--primary-dark);">📖 2페이지 (설교)</label>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">📂 이 영역에 직접 드래그 앤 드롭</div>
+            <input type="file" id="manual-p2" accept="image/*" class="form-input" style="font-size: 12px;" onchange="previewManualPage(2, this.files[0])">
             <div id="preview-p2" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
-          <div id="box-p3" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            <label class="form-label" style="font-size: 13px;">📢 3페이지 (광고)</label>
-            <input type="file" id="manual-p3" accept="image/*" class="form-input" onchange="previewManualPage(3, this.files[0])">
+          <div id="box-p3" class="manual-page-box" style="background: #faf8fb; padding: 14px; border-radius: 10px; border: 2px dashed var(--border-color); text-align: center; transition: all 0.2s;" ondragover="handleSingleDragOver(event, 3)" ondragleave="handleSingleDragLeave(event, 3)" ondrop="handleSingleDrop(event, 3)">
+            <label class="form-label" style="font-size: 13px; font-weight: 800; color: var(--primary-dark);">📢 3페이지 (광고)</label>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">📂 이 영역에 직접 드래그 앤 드롭</div>
+            <input type="file" id="manual-p3" accept="image/*" class="form-input" style="font-size: 12px;" onchange="previewManualPage(3, this.files[0])">
             <div id="preview-p3" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
-          <div id="box-p4" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            <label class="form-label" style="font-size: 13px;">✝️ 4페이지 (소식/기타)</label>
-            <input type="file" id="manual-p4" accept="image/*" class="form-input" onchange="previewManualPage(4, this.files[0])">
+          <div id="box-p4" class="manual-page-box" style="background: #faf8fb; padding: 14px; border-radius: 10px; border: 2px dashed var(--border-color); text-align: center; transition: all 0.2s;" ondragover="handleSingleDragOver(event, 4)" ondragleave="handleSingleDragLeave(event, 4)" ondrop="handleSingleDrop(event, 4)">
+            <label class="form-label" style="font-size: 13px; font-weight: 800; color: var(--primary-dark);">✝️ 4페이지 (소식/기타)</label>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">📂 이 영역에 직접 드래그 앤 드롭</div>
+            <input type="file" id="manual-p4" accept="image/*" class="form-input" style="font-size: 12px;" onchange="previewManualPage(4, this.files[0])">
             <div id="preview-p4" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
-          </div>
-
-          <div id="box-p5" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
-            <label class="form-label" style="font-size: 13px;">📑 5페이지 (광고삽지)</label>
-            <input type="file" id="manual-p5" accept="image/*" class="form-input" onchange="previewManualPage(5, this.files[0])">
-            <div id="preview-p5" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
         </div>
 
@@ -904,6 +896,7 @@
             <div class="bulletin-header">
               <span>📰 <strong>${b.label}</strong> <small style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">(발행일: ${b.date})</small></span>
               <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="editBulletinLabel('${b.date}', '${b.label}')" style="padding: 5px 12px; font-size: 12.5px; border-radius: 6px; cursor: pointer; background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; font-weight: 700;">✏️ 제목 수정</button>
                 <button onclick="editBulletinDate('${b.date}')" style="padding: 5px 12px; font-size: 12.5px; border-radius: 6px; cursor: pointer; background: #f3edf7; color: var(--primary-dark); border: 1px solid var(--primary); font-weight: 700;">✏️ 날짜 수정</button>
                 <button onclick="deleteBulletinRecord('${b.date}')" style="padding: 5px 12px; font-size: 12.5px; border-radius: 6px; cursor: pointer; background: #ffebee; color: var(--danger); border: 1px solid var(--danger); font-weight: 700;">🗑️ 삭제</button>
               </div>
@@ -978,6 +971,28 @@
       }
     }
 
+    async function editBulletinLabel(dateStr, oldLabel) {
+      const newLabel = prompt(`[${dateStr} 주보]의 새로운 제목 라벨을 입력하세요:`, oldLabel);
+      if (!newLabel || newLabel === oldLabel) return;
+
+      try {
+        const res = await fetch(`/api/v1/admin/bulletin/${dateStr}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_label: newLabel })
+        });
+        const result = await res.json();
+        if (res.ok) {
+          alert(`주보 제목이 [${result.new_label}]로 수정되었습니다!`);
+          loadSavedBulletins();
+        } else {
+          alert('제목 수정 실패: ' + (result.detail || '오류 발생'));
+        }
+      } catch (err) {
+        alert('제목 수정 실패: ' + err.toString());
+      }
+    }
+
     async function submitQtJsonImport() {
       const jsonStr = document.getElementById('json-text-input').value.trim();
       if (!jsonStr) {
@@ -1020,29 +1035,13 @@
         alert('주보 날짜를 선택해주세요.');
         return;
       }
-      const label = document.getElementById('manual-bulletin-label').value.trim();
-
-      const submitBtn = document.getElementById('btn-manual-submit');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = '⏳ 주보 이미지 준비 및 수동 발행 처리 중...';
-      }
-
-    async function submitManualBulletin() {
-      const dateStr = document.getElementById('manual-bulletin-date').value;
-      if (!dateStr) {
-        alert('주보 날짜를 선택해주세요.');
-        return;
-      }
-      const label = document.getElementById('manual-bulletin-label').value.trim();
 
       const p1 = document.getElementById('manual-p1').files[0];
       const p2 = document.getElementById('manual-p2').files[0];
       const p3 = document.getElementById('manual-p3').files[0];
       const p4 = document.getElementById('manual-p4').files[0];
-      const p5 = document.getElementById('manual-p5').files[0];
 
-      if (!p1 && !p2 && !p3 && !p4 && !p5) {
+      if (!p1 && !p2 && !p3 && !p4) {
         alert('최소 1개 이상의 주보 이미지 파일(드래그 앤 드롭 또는 선택)을 첨부해주세요.');
         return;
       }
@@ -1055,13 +1054,11 @@
 
       const formData = new FormData();
       formData.append('date_str', dateStr);
-      if (label) formData.append('label', label);
 
       if (p1) formData.append('page1', p1);
       if (p2) formData.append('page2', p2);
       if (p3) formData.append('page3', p3);
       if (p4) formData.append('page4', p4);
-      if (p5) formData.append('page5', p5);
 
       try {
         const resp = await fetch('/api/v1/admin/bulletin/manual', {
@@ -1072,8 +1069,7 @@
         if (resp.ok) {
           alert('✅ ' + res.message);
           document.getElementById('manual-bulletin-date').value = '';
-          document.getElementById('manual-bulletin-label').value = '';
-          [1,2,3,4,5].forEach(i => {
+          [1,2,3,4].forEach(i => {
             const pInput = document.getElementById(`manual-p${i}`);
             const prev = document.getElementById(`preview-p${i}`);
             if (pInput) pInput.value = '';
@@ -1117,13 +1113,53 @@
       });
     }
 
-    let manualFilesMap = { 1: null, 2: null, 3: null, 4: null, 5: null };
+    let manualFilesMap = { 1: null, 2: null, 3: null, 4: null };
+
+    function handleSingleDragOver(e, pageNum) {
+      e.preventDefault();
+      e.stopPropagation();
+      const box = document.getElementById(`box-p${pageNum}`);
+      if (box) {
+        box.style.background = 'rgba(46, 125, 50, 0.1)';
+        box.style.borderColor = '#2e7d32';
+      }
+    }
+
+    function handleSingleDragLeave(e, pageNum) {
+      e.preventDefault();
+      e.stopPropagation();
+      const box = document.getElementById(`box-p${pageNum}`);
+      if (box) {
+        box.style.background = '#faf8fb';
+        box.style.borderColor = 'var(--border-color)';
+      }
+    }
+
+    function handleSingleDrop(e, pageNum) {
+      e.preventDefault();
+      e.stopPropagation();
+      const box = document.getElementById(`box-p${pageNum}`);
+      if (box) {
+        box.style.background = '#faf8fb';
+        box.style.borderColor = 'var(--border-color)';
+      }
+
+      const files = e.dataTransfer ? e.dataTransfer.files : null;
+      if (files && files.length > 0) {
+        const file = files[0];
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const inputElem = document.getElementById(`manual-p${pageNum}`);
+        if (inputElem) inputElem.files = dt.files;
+        previewManualPage(pageNum, file);
+      }
+    }
 
     function handleManualBatchFiles(files) {
       if (!files || files.length === 0) return;
       const sorted = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
       
-      for (let i = 0; i < Math.min(sorted.length, 5); i++) {
+      for (let i = 0; i < Math.min(sorted.length, 4); i++) {
         const pageNum = i + 1;
         manualFilesMap[pageNum] = sorted[i];
         

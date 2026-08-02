@@ -1136,17 +1136,6 @@
       }
     }
 
-    function previewManualPage(pageNum, file) {
-      const previewElem = document.getElementById(`preview-p${pageNum}`);
-      if (file) {
-        manualFilesMap[pageNum] = file;
-        if (previewElem) previewElem.innerText = `✔️ ${file.name}`;
-      } else {
-        manualFilesMap[pageNum] = null;
-        if (previewElem) previewElem.innerText = '';
-      }
-    }
-
     // Auto load bulletins on page start and setup drag drop
     window.addEventListener('DOMContentLoaded', () => {
       const dropArea = document.getElementById('manual-drop-area');

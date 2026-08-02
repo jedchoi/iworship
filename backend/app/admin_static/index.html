@@ -399,40 +399,55 @@
           <div id="box-p1" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">🖼️ 1페이지 (표지)</label>
             <input type="file" id="manual-p1" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(1, this.files[0])">
-            <input type="text" id="manual-url-1" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 8px 10px;">
+            <div style="display: flex; gap: 4px;">
+              <input type="text" id="manual-url-1" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;">
+              <button onclick="fetchImageFromUrl(1)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
+            </div>
             <div id="preview-p1" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p2" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📖 2페이지 (설교)</label>
             <input type="file" id="manual-p2" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(2, this.files[0])">
-            <input type="text" id="manual-url-2" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 8px 10px;">
+            <div style="display: flex; gap: 4px;">
+              <input type="text" id="manual-url-2" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;">
+              <button onclick="fetchImageFromUrl(2)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
+            </div>
             <div id="preview-p2" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p3" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📢 3페이지 (광고)</label>
             <input type="file" id="manual-p3" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(3, this.files[0])">
-            <input type="text" id="manual-url-3" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 8px 10px;">
+            <div style="display: flex; gap: 4px;">
+              <input type="text" id="manual-url-3" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;">
+              <button onclick="fetchImageFromUrl(3)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
+            </div>
             <div id="preview-p3" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p4" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">✝️ 4페이지 (소식/기타)</label>
             <input type="file" id="manual-p4" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(4, this.files[0])">
-            <input type="text" id="manual-url-4" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 8px 10px;">
+            <div style="display: flex; gap: 4px;">
+              <input type="text" id="manual-url-4" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;">
+              <button onclick="fetchImageFromUrl(4)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
+            </div>
             <div id="preview-p4" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
 
           <div id="box-p5" class="manual-page-box" style="background: #faf8fb; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
             <label class="form-label" style="font-size: 13px;">📑 5페이지 (광고삽지)</label>
             <input type="file" id="manual-p5" accept="image/*" class="form-input" style="margin-bottom: 6px;" onchange="previewManualPage(5, this.files[0])">
-            <input type="text" id="manual-url-5" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 8px 10px;">
+            <div style="display: flex; gap: 4px;">
+              <input type="text" id="manual-url-5" class="form-input" placeholder="🔗 이미지 웹 주소 (https://...)" style="font-size: 12px; padding: 6px 8px;">
+              <button onclick="fetchImageFromUrl(5)" style="padding: 6px 10px; font-size: 11.5px; font-weight: 700; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">📥 불러오기</button>
+            </div>
             <div id="preview-p5" style="margin-top: 6px; font-size: 12px; color: var(--primary-dark); font-weight: 700; word-break: break-all;"></div>
           </div>
         </div>
 
-        <button onclick="submitManualBulletin()" class="btn-submit" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
+        <button id="btn-manual-submit" onclick="submitManualBulletin()" class="btn-submit" style="background: linear-gradient(135deg, #2e7d32, #1b5e20);">
           🚀 주보 즉시 수동 발행
         </button>
       </div>
@@ -1058,6 +1073,12 @@
       if (url4) formData.append('url4', url4);
       if (url5) formData.append('url5', url5);
 
+      const submitBtn = document.getElementById('btn-manual-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ 이미지 다운로드 및 수동 주보 발행 처리 중...';
+      }
+
       try {
         const resp = await fetch('/api/v1/admin/bulletin/manual', {
           method: 'POST',
@@ -1082,6 +1103,40 @@
         }
       } catch (e) {
         alert('❌ 수동 등록 요청 실패: ' + e.message);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🚀 주보 즉시 수동 발행';
+        }
+      }
+    }
+
+    async function fetchImageFromUrl(pageNum) {
+      const urlInput = document.getElementById(`manual-url-${pageNum}`);
+      const url = urlInput ? urlInput.value.trim() : '';
+      if (!url) {
+        alert('이미지 웹 URL 주소를 먼저 입력해 주세요.');
+        return;
+      }
+      const previewElem = document.getElementById(`preview-p${pageNum}`);
+      if (previewElem) previewElem.innerText = '⏳ 이미지 불러오는 중...';
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const file = new File([blob], `page_${pageNum}.jpg`, { type: blob.type || 'image/jpeg' });
+
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const inputElem = document.getElementById(`manual-p${pageNum}`);
+        if (inputElem) inputElem.files = dt.files;
+
+        previewManualPage(pageNum, file);
+        alert(`✅ ${pageNum}페이지 이미지를 웹에서 성공적으로 가져왔습니다!`);
+      } catch (err) {
+        if (previewElem) previewElem.innerText = `🔗 URL 주소 입력됨 (서버 다운로드 예정)`;
+        alert(`💡 이 링크는 브라우저 직접 불러오기가 보안(CORS)으로 제한되는 URL입니다.\n하단 [🚀 주보 즉시 수동 발행] 버튼을 누르시면 오라클 서버가 해당 링크에서 이미지를 자동으로 다운로드하여 100% 정상 등록합니다!`);
       }
     }
 

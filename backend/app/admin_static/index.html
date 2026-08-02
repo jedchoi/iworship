@@ -1040,43 +1040,49 @@
         return;
       }
       const label = document.getElementById('manual-bulletin-label').value.trim();
-      const p1 = document.getElementById('manual-p1').files[0];
-      const p2 = document.getElementById('manual-p2').files[0];
-      const p3 = document.getElementById('manual-p3').files[0];
-      const p4 = document.getElementById('manual-p4').files[0];
-      const p5 = document.getElementById('manual-p5').files[0];
 
-      const url1 = document.getElementById('manual-url-1').value.trim();
-      const url2 = document.getElementById('manual-url-2').value.trim();
-      const url3 = document.getElementById('manual-url-3').value.trim();
-      const url4 = document.getElementById('manual-url-4').value.trim();
-      const url5 = document.getElementById('manual-url-5').value.trim();
+      const submitBtn = document.getElementById('btn-manual-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ 주보 이미지 준비 및 수동 발행 처리 중...';
+      }
 
-      if (!p1 && !p2 && !p3 && !p4 && !p5 && !url1 && !url2 && !url3 && !url4 && !url5) {
-        alert('최소 1개 이상의 주보 지면 사진 파일 또는 웹 URL 주소를 입력해주세요.');
-        return;
+      // URL만 입력되어 있고 아직 불러오지 않은 항목 자동 불러오기 처리 (팝업 없음)
+      for (let i = 1; i <= 5; i++) {
+        const pInput = document.getElementById(`manual-p${i}`);
+        const uInput = document.getElementById(`manual-url-${i}`);
+        if ((!pInput || !pInput.files || !pInput.files[0]) && uInput && uInput.value.trim()) {
+          await fetchImageFromUrl(i);
+        }
       }
 
       const formData = new FormData();
       formData.append('date_str', dateStr);
       if (label) formData.append('label', label);
 
-      if (p1) formData.append('page1', p1);
-      if (p2) formData.append('page2', p2);
-      if (p3) formData.append('page3', p3);
-      if (p4) formData.append('page4', p4);
-      if (p5) formData.append('page5', p5);
+      let validCount = 0;
+      for (let i = 1; i <= 5; i++) {
+        const pInput = document.getElementById(`manual-p${i}`);
+        const uInput = document.getElementById(`manual-url-${i}`);
+        const file = pInput ? pInput.files[0] : null;
+        const urlStr = uInput ? uInput.value.trim() : '';
 
-      if (url1) formData.append('url1', url1);
-      if (url2) formData.append('url2', url2);
-      if (url3) formData.append('url3', url3);
-      if (url4) formData.append('url4', url4);
-      if (url5) formData.append('url5', url5);
+        if (file) {
+          formData.append(`page${i}`, file);
+          validCount++;
+        } else if (urlStr) {
+          formData.append(`url${i}`, urlStr);
+          validCount++;
+        }
+      }
 
-      const submitBtn = document.getElementById('btn-manual-submit');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = '⏳ 이미지 다운로드 및 수동 주보 발행 처리 중...';
+      if (validCount === 0) {
+        alert('최소 1개 이상의 주보 이미지 파일 또는 웹 URL 주소를 입력해주세요.');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🚀 주보 즉시 수동 발행';
+        }
+        return;
       }
 
       try {
@@ -1114,29 +1120,74 @@
     async function fetchImageFromUrl(pageNum) {
       const urlInput = document.getElementById(`manual-url-${pageNum}`);
       const url = urlInput ? urlInput.value.trim() : '';
-      if (!url) {
-        alert('이미지 웹 URL 주소를 먼저 입력해 주세요.');
-        return;
-      }
+      if (!url) return;
+
       const previewElem = document.getElementById(`preview-p${pageNum}`);
-      if (previewElem) previewElem.innerText = '⏳ 이미지 불러오는 중...';
+      if (previewElem) previewElem.innerHTML = '<span style="color:#666; font-size:11px;">⏳ 이미지 로딩 중...</span>';
 
       try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const file = new File([blob], `page_${pageNum}.jpg`, { type: blob.type || 'image/jpeg' });
+        let blob = null;
+        try {
+          const res = await fetch(url);
+          if (res.ok) blob = await res.blob();
+        } catch (e) {}
 
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        const inputElem = document.getElementById(`manual-p${pageNum}`);
-        if (inputElem) inputElem.files = dt.files;
+        if (!blob) {
+          blob = await loadImageAsBlob(url);
+        }
 
-        previewManualPage(pageNum, file);
-        alert(`✅ ${pageNum}페이지 이미지를 웹에서 성공적으로 가져왔습니다!`);
+        if (blob) {
+          const file = new File([blob], `bulletin_page_${pageNum}.jpg`, { type: blob.type || 'image/jpeg' });
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          const inputElem = document.getElementById(`manual-p${pageNum}`);
+          if (inputElem) inputElem.files = dt.files;
+
+          const imgUrl = URL.createObjectURL(blob);
+          if (previewElem) {
+            previewElem.innerHTML = `<div style="margin-top:4px;"><img src="${imgUrl}" style="max-height:85px; max-width:100%; border-radius:6px; border:1px solid var(--primary); display:block; margin: 0 auto 4px;"><span style="color:#2e7d32; font-size:11px; font-weight:800;">✔️ 준비 완료 (${(blob.size/1024).toFixed(0)}KB)</span></div>`;
+          }
+        }
       } catch (err) {
-        if (previewElem) previewElem.innerText = `🔗 URL 주소 입력됨 (서버 다운로드 예정)`;
-        alert(`💡 이 링크는 브라우저 직접 불러오기가 보안(CORS)으로 제한되는 URL입니다.\n하단 [🚀 주보 즉시 수동 발행] 버튼을 누르시면 오라클 서버가 해당 링크에서 이미지를 자동으로 다운로드하여 100% 정상 등록합니다!`);
+        if (previewElem) previewElem.innerHTML = `<span style="color:#645179; font-size:11px; font-weight:700;">🔗 URL 입력됨 (서버 다운로드 예정)</span>`;
+      }
+    }
+
+    function loadImageAsBlob(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Canvas toBlob failed'));
+            }, 'image/jpeg', 0.92);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = (e) => reject(e);
+        img.src = url;
+      });
+    }
+
+    function previewManualPage(pageNum, file) {
+      const previewElem = document.getElementById(`preview-p${pageNum}`);
+      if (file) {
+        manualFilesMap[pageNum] = file;
+        const imgUrl = URL.createObjectURL(file);
+        if (previewElem) {
+          previewElem.innerHTML = `<div style="margin-top:4px;"><img src="${imgUrl}" style="max-height:85px; max-width:100%; border-radius:6px; border:1px solid var(--primary); display:block; margin: 0 auto 4px;"><span style="color:#2e7d32; font-size:11px; font-weight:800;">✔️ ${file.name}</span></div>`;
+        }
+      } else {
+        manualFilesMap[pageNum] = null;
+        if (previewElem) previewElem.innerText = '';
       }
     }
 

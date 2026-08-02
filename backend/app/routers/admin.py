@@ -732,21 +732,30 @@ async def create_bulletin_manual(
         up_file = upload_files[idx]
         url_str = urls[idx].strip() if urls[idx] else ""
 
-        if up_file and up_file.filename:
+        has_file = False
+        if up_file and hasattr(up_file, "filename") and up_file.filename:
             content = await up_file.read()
-            if content:
+            if content and len(content) > 0:
+                has_file = True
                 page_num = len(pages_urls) + 1
                 filename = f"bulletin_{date_str}_p{page_num}.jpg"
                 filepath = os.path.join(BULLETINS_DIR, filename)
                 with open(filepath, "wb") as f:
                     f.write(content)
                 pages_urls.append(f"/static/bulletins/{filename}")
-        elif url_str:
+
+        if not has_file and url_str:
             try:
-                req = urllib.request.Request(url_str, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=10) as resp:
+                req = urllib.request.Request(
+                    url_str,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=12) as resp:
                     content = resp.read()
-                    if content:
+                    if content and len(content) > 0:
                         page_num = len(pages_urls) + 1
                         filename = f"bulletin_{date_str}_p{page_num}.jpg"
                         filepath = os.path.join(BULLETINS_DIR, filename)
@@ -754,10 +763,10 @@ async def create_bulletin_manual(
                             f.write(content)
                         pages_urls.append(f"/static/bulletins/{filename}")
             except Exception as e:
-                print(f"URL 이미지 다운로드 실패 ({url_str}): {e}")
+                print(f"[Bulletin Manual Log] URL 이미지 다운로드 실패 ({url_str}): {e}")
 
     if not pages_urls:
-        raise HTTPException(status_code=400, detail="최소 1개 이상의 주보 이미지 파일 또는 웹 URL을 입력하셔야 합니다.")
+        raise HTTPException(status_code=400, detail="최소 1개 이상의 주보 이미지 파일 또는 유효한 웹 URL을 입력하셔야 합니다.")
 
     res = await db.execute(select(Bulletin).where(Bulletin.date == date_str))
     existing = res.scalars().first()

@@ -10,11 +10,14 @@ echo "📦 1/4. 시스템 패키지 및 Docker/Git 설치 중..."
 sudo apt update -y
 sudo apt install -y docker.io docker-compose git iptables-persistent
 
-# 2. Ubuntu 내부 방화벽 (iptables) 80, 443, 8000 포트 개방
-echo "🛡️ 2/4. 우분투 서버 내부 방화벽(포트 80, 443, 8000) 개방 중..."
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT || true
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT || true
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8000 -j ACCEPT || true
+# 2. Ubuntu 내부 방화벽 (iptables) 전체 개방
+echo "🛡️ 2/4. 우분투 서버 내부 방화벽(iptables) 개방 중..."
+sudo ufw disable || true
+sudo iptables -F || true
+sudo iptables -X || true
+sudo iptables -P INPUT ACCEPT || true
+sudo iptables -P FORWARD ACCEPT || true
+sudo iptables -P OUTPUT ACCEPT || true
 sudo netfilter-persistent save || true
 
 # 3. 최신 프로젝트 코드 동기화

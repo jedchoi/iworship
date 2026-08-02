@@ -731,12 +731,13 @@ async def create_bulletin_manual(
     for idx in range(5):
         up_file = upload_files[idx]
         url_str = urls[idx].strip() if urls[idx] else ""
-        filename = f"bulletin_{date_str}_p{idx+1}.jpg"
-        filepath = os.path.join(BULLETINS_DIR, filename)
 
         if up_file and up_file.filename:
             content = await up_file.read()
             if content:
+                page_num = len(pages_urls) + 1
+                filename = f"bulletin_{date_str}_p{page_num}.jpg"
+                filepath = os.path.join(BULLETINS_DIR, filename)
                 with open(filepath, "wb") as f:
                     f.write(content)
                 pages_urls.append(f"/static/bulletins/{filename}")
@@ -746,6 +747,9 @@ async def create_bulletin_manual(
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     content = resp.read()
                     if content:
+                        page_num = len(pages_urls) + 1
+                        filename = f"bulletin_{date_str}_p{page_num}.jpg"
+                        filepath = os.path.join(BULLETINS_DIR, filename)
                         with open(filepath, "wb") as f:
                             f.write(content)
                         pages_urls.append(f"/static/bulletins/{filename}")

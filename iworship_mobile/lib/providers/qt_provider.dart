@@ -369,8 +369,10 @@ class QtProvider with ChangeNotifier {
   }
 
   Future<List<UserNote>> getAllUserNotesForBackup() async {
-    List<UserNote> allNotes = [];
-    if (kIsWeb) {
+    Map<String, UserNote> notesMap = {};
+
+    // 1. SharedPreferences 읽기 (웹 및 앱 공통)
+    try {
       final prefs = await SharedPreferences.getInstance();
       final keys = prefs.getKeys();
       for (String key in keys) {
@@ -378,21 +380,40 @@ class QtProvider with ChangeNotifier {
           String? jsonStr = prefs.getString(key);
           if (jsonStr != null && jsonStr.isNotEmpty) {
             try {
-              allNotes.add(UserNote.fromMap(json.decode(jsonStr)));
+              UserNote n = UserNote.fromMap(json.decode(jsonStr));
+              if (n.date.isNotEmpty) {
+                notesMap[n.date] = n;
+              }
             } catch (_) {}
           }
         }
       }
-    } else {
-      allNotes = await dbHelper.getAllUserNotes();
+    } catch (_) {}
+
+    // 2. SQLite DB 읽기 (앱)
+    if (!kIsWeb) {
+      try {
+        List<UserNote> dbNotes = await dbHelper.getAllUserNotes();
+        for (var n in dbNotes) {
+          if (n.date.isNotEmpty) {
+            notesMap[n.date] = n;
+          }
+        }
+      } catch (_) {}
     }
-    return allNotes;
+
+    // 3. 메모리에 있는 현재 작성 중인 노트 포함
+    if (_currentUserNote != null && _currentUserNote!.date.isNotEmpty) {
+      notesMap[_currentUserNote!.date] = _currentUserNote!;
+    }
+
+    return notesMap.values.toList();
   }
 
   Future<bool> triggerSyncPush() async {
     List<UserNote> notesToBackup = await getAllUserNotesForBackup();
     if (notesToBackup.isNotEmpty) {
-      bool success = await apiService.pushSyncNotes(_deviceId, notesToBackup);
+      bool success = await apiService.pushSyncNotes(_deviceId.trim(), notesToBackup);
       if (success && !kIsWeb) {
         for (var note in notesToBackup) {
           await dbHelper.markAsSynced(note.date);
@@ -404,17 +425,17 @@ class QtProvider with ChangeNotifier {
   }
 
   Future<int> restoreUserNotesFromBackup() async {
-    String activeId = _deviceId;
+    String activeId = _deviceId.trim();
     List<UserNote> restored = await apiService.pullSyncNotes(activeId);
     if (restored.isNotEmpty) {
       for (var note in restored) {
-        if (kIsWeb) {
-          await _saveWebUserNote(note);
-        } else {
+        await _saveWebUserNote(note);
+        if (!kIsWeb) {
           await dbHelper.upsertUserNote(note);
         }
       }
       await loadDataForDate(_selectedDate);
+      notifyListeners();
     }
     return restored.length;
   }

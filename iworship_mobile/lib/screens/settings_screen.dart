@@ -12,6 +12,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _urlCtrl;
+  bool _showServerSettings = false;
+  int _titleTapCount = 0;
+  DateTime? _lastTapTime;
 
   @override
   void initState() {
@@ -25,82 +28,119 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _urlCtrl.text = Provider.of<QtProvider>(context, listen: false).apiService.baseUrl;
   }
 
+  void _onTitleTapped() {
+    final now = DateTime.now();
+    if (_lastTapTime != null && now.difference(_lastTapTime!).inMilliseconds > 1500) {
+      _titleTapCount = 0;
+    }
+    _lastTapTime = now;
+    _titleTapCount++;
+
+    if (_titleTapCount >= 10) {
+      setState(() {
+        _showServerSettings = !_showServerSettings;
+        _titleTapCount = 0;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_showServerSettings
+              ? '🔓 개발자 모드: 서버 주소 설정이 활성화되었습니다!'
+              : '🔒 서버 주소 설정이 숨겨졌습니다.'),
+        ),
+      );
+    } else if (_titleTapCount >= 5) {
+      int remaining = 10 - _titleTapCount;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(milliseconds: 500),
+          content: Text('개발자 서버 설정 잠금 해제까지 $remaining회 남음'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<QtProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('⚙️ 설정 & 동기화', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: GestureDetector(
+          onTap: _onTitleTapped,
+          behavior: HitTestBehavior.opaque,
+          child: const Text('⚙️ 설정 & 동기화', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '🌐 백엔드 동기화 서버 주소 설정',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF645179)),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _urlCtrl,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'http://localhost:8000 또는 http://192.168.0.100:8000',
+            if (_showServerSettings) ...[
+              const Text(
+                '🌐 백엔드 동기화 서버 주소 설정',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF645179)),
               ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ActionChip(
-                  avatar: const Icon(Icons.cloud_done, size: 16),
-                  label: const Text('☁️ 오라클 실서버 (168.110.63.231:8000)'),
-                  onPressed: () {
-                    _urlCtrl.text = 'http://168.110.63.231:8000';
-                  },
+              const SizedBox(height: 8),
+              TextField(
+                controller: _urlCtrl,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'http://localhost:8000 또는 http://192.168.0.100:8000',
                 ),
-                ActionChip(
-                  avatar: const Icon(Icons.phone_android, size: 16),
-                  label: const Text('📱 스마트폰 (192.168.45.21)'),
-                  onPressed: () {
-                    _urlCtrl.text = 'http://192.168.45.21:8000';
-                  },
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.computer, size: 16),
-                  label: const Text('💻 에뮬레이터 (10.0.2.2)'),
-                  onPressed: () {
-                    _urlCtrl.text = 'http://10.0.2.2:8000';
-                  },
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.language, size: 16),
-                  label: const Text('🖥️ 로컬 (localhost)'),
-                  onPressed: () {
-                    _urlCtrl.text = 'http://localhost:8000';
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                provider.updateServerUrl(_urlCtrl.text.trim());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('서버 연결 주소가 업데이트되었습니다!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C6893),
-                foregroundColor: Colors.white,
               ),
-              child: const Text('서버 주소 저장'),
-            ),
-
-            const Divider(height: 40, thickness: 1),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ActionChip(
+                    avatar: const Icon(Icons.cloud_done, size: 16),
+                    label: const Text('☁️ 오라클 실서버 (168.110.63.231:8000)'),
+                    onPressed: () {
+                      _urlCtrl.text = 'http://168.110.63.231:8000';
+                    },
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.phone_android, size: 16),
+                    label: const Text('📱 스마트폰 (192.168.45.21)'),
+                    onPressed: () {
+                      _urlCtrl.text = 'http://192.168.45.21:8000';
+                    },
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.computer, size: 16),
+                    label: const Text('💻 에뮬레이터 (10.0.2.2)'),
+                    onPressed: () {
+                      _urlCtrl.text = 'http://10.0.2.2:8000';
+                    },
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.language, size: 16),
+                    label: const Text('🖥️ 로컬 (localhost)'),
+                    onPressed: () {
+                      _urlCtrl.text = 'http://localhost:8000';
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  provider.updateServerUrl(_urlCtrl.text.trim());
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('서버 연결 주소가 업데이트되었습니다!')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7C6893),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('서버 주소 저장'),
+              ),
+              const Divider(height: 40, thickness: 1),
+            ],
 
             const Text(
               '🔤 성경 폰트 크기 설정',
